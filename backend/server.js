@@ -13,13 +13,13 @@ const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 const db = new sqlite3.Database(':memory:'); // Wersja testowa w pamięci RAM
 
-// --- BAZA DANYCH (CRUD & Inne) ---
+//BAZA DANYCH
 db.serialize(() => {
   db.run("CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT, score INTEGER)");
   db.run("INSERT INTO users (username, score) VALUES ('Admin', 100)");
 });
 
-// --- HTTP REST API (Kryterium HTTP) ---
+//HTTP REST API
 app.get('/api/stats', (req, res) => {
   db.all("SELECT * FROM users", [], (err, rows) => res.json(rows));
 });
@@ -31,20 +31,20 @@ app.post('/api/register', (req, res) => {
   });
 });
 
-// Wyszukiwanie wzorca (Kryterium REST)
+// Wyszukiwanie wzorca
 app.get('/api/search/:pattern', (req, res) => {
   const pattern = `%${req.params.pattern}%`;
   db.all("SELECT * FROM users WHERE username LIKE ?", [pattern], (err, rows) => res.json(rows));
 });
 
-// --- MQTT (Kryterium MQTT) ---
+//MQTT
 const mqttClient = mqtt.connect('mqtt://broker.hivemq.com'); // Publiczny broker do testów
 mqttClient.on('connect', () => {
   console.log('Połączono z MQTT');
   mqttClient.subscribe('wordle/game/win');
 });
 
-// --- WEBSOCKET (Kryterium WS) ---
+//WEBSOCKET
 io.on('connection', (socket) => {
   console.log('Nowy gracz połączony:', socket.id);
 
@@ -54,11 +54,10 @@ io.on('connection', (socket) => {
   });
 
   socket.on('send_guess', (data) => {
-    // Logika sprawdzania słowa (uproszczona)
+    // Logika sprawdzania słowa
     const result = data.guess === "PIESEK" ? "WIN" : "TRY_AGAIN";
-    
+  
     if(result === "WIN") {
-      // Powiadomienie innych przez MQTT
       mqttClient.publish('wordle/game/win', `Gracz ${data.user} odgadł hasło!`);
     }
     
