@@ -14,6 +14,7 @@ app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 const db = new sqlite3.Database('./wordle.db');
+const words=
 
 // Baza danych
 db.serialize(() => {
@@ -24,6 +25,21 @@ db.serialize(() => {
       score INTEGER DEFAULT 0
   )`);
 });
+
+async function updateTargetWord() {
+    const url = `https://random-word-api.herokuapp.com/word?length=5`;
+    try {
+        const response = await fetch(url);
+        if (response.ok) {
+            const words = await response.json();
+            targetWord = words[0].toUpperCase(); // Zapisujemy jako wielkie litery
+            console.log(`Nowe słowo dnia: ${targetWord}`);
+        }
+    } catch (e) {
+        console.error("Nie udało się pobrać słowa, zostaję przy domyślnym.");
+    }
+}
+updateTargetWord();
 
 app.post('/api/register', async (req, res) => {
   try {
@@ -54,12 +70,15 @@ app.post('/api/login', (req, res) => {
 //logika gry
 app.post('/api/play', (req, res) => {
   const { guess } = req.body;
-  const target = "KOTKI"; // losowe słowo poprawic
   const feedback = [];
 
+  if (!guess || guess.length !== 5) {
+        return res.status(400).json({ error: "Słowo musi mieć 5 liter" });
+  }
+  const upperGuess = guess.toUpperCase();
   for (let i = 0; i < 5; i++) {
-    if (guess[i] === target[i]) feedback.push('green');
-    else if (target.includes(guess[i])) feedback.push('yellow');
+    if (guess[i] === targetWord[i]) feedback.push('green');
+    else if (targetWord.includes(upperGuess[i])) feedback.push('yellow');
     else feedback.push('grey');
   }
   res.json({ feedback });

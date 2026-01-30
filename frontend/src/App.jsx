@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { io } from "socket.io-client";
 import './App.css';
-// import "./assets/App.scss";
+// Połączenie z serwerem (port 3000 - Twój backend)
+const socket = io("http://localhost:3000");
 
 function App() {
   const [username, setUsername] = useState('');
@@ -34,12 +36,19 @@ function App() {
   // Wysyłanie słowa do gry
   const submitGuess = async () => {
     if (guess.length !== 5) return alert("Słowo musi mieć 5 liter!");
-    
     try {
       const res = await axios.post('http://localhost:3000/api/play', 
         { guess: guess.toUpperCase() },
         { headers: { Authorization: token } }
       );
+
+      const newFeedback = res.data.feedback;
+      // Powiadom inne osoby w pokoju o swoim ruchu przez Socket.io
+      socket.emit('send_guess', {
+          room: 'global_room', //zamienić na zmienną z inputa, żeby tworzyć własne pokoje
+          user: username,
+          result: newFeedback 
+      });
       
       // Dodajemy nową próbę do tablicy wyników
       setBoard([...board, { word: guess.toUpperCase(), feedback: res.data.feedback }]);
