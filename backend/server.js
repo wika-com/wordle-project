@@ -32,7 +32,7 @@ async function updateTargetWord() {
         const response = await fetch(url);
         if (response.ok) {
             const words = await response.json();
-            targetWord = words[0].toUpperCase(); // Zapisujemy jako wielkie litery
+            targetWord = words[0].toUpperCase();
             console.log(`Nowe słowo dnia: ${targetWord}`);
         }
     } catch (e) {
@@ -101,7 +101,6 @@ app.delete('/api/user', (req, res) => {
 app.post('/api/play', (req, res) => {
   const { guess } = req.body;
   const feedback = [];
-
   if (!guess || guess.length !== 5) {
         return res.status(400).json({ error: "Słowo musi mieć 5 liter" });
   }
@@ -135,7 +134,6 @@ mqttClient.on('connect', () => {
 // WEBSOCKET
 io.on('connection', (socket) => {
   console.log('Nowy gracz połączony:', socket.id);
-
   socket.on('join_room', (room) => {
     socket.join(room);
     console.log(`Gracz dołączył do pokoju: ${room}`);
@@ -147,6 +145,7 @@ io.on('connection', (socket) => {
     if(isWin) {
       mqttClient.publish('wordle/game/win', `Gracz ${data.user} odgadł hasło!`);
       db.run("UPDATE users SET score = score + 1 WHERE username = ?", [data.user]);
+      updateTargetWord();
     }
     io.to(data.room).emit('receive_result', { user: data.user, result: data.result, isWin: isWin });
   });

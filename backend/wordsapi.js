@@ -4,7 +4,7 @@ async function getRandomWordByLength() {
     try {
         const response = await fetch(url);
 
-        if (response.ok) { // odpowiednik status_code == 200
+        if (response.ok) {
             const words = await response.json();
             return words.length > 0 ? words[0] : null;
         }
@@ -14,8 +14,3 @@ async function getRandomWordByLength() {
         return null;
     }
 }
-
-// Przykład wywołania
-getRandomWordByLength().then(slowo => {
-    console.log(`Wylosowane słowo (5 liter): ${slowo}`);
-});

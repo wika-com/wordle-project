@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { io } from "socket.io-client";
 import './App.css';
-// Połączenie z serwerem (port 3000 - Twój backend)
 const socket = io("http://localhost:3000");
 
 function App() {
@@ -39,10 +38,23 @@ function App() {
       const res = await axios.put("http://localhost:3000/api/user/reset", {}, {
         headers: { Authorization: token}
       });
+      alert(res.data.message);
+    } catch (err) {
+      alert("Błąd w resetowaniu...");
+    }
+  };
 
+  const handleDeleteAccount = async () => {
+    if (!window.confirm("Czy napewno chcesz usunąć konto?")) return;
+    try {
+      const res = await axios.put("http://localhost:3000/api/user/reset", {}, {
+        headers: { Authorization: token}
+      });
+      alert(res.data.message);
+    } catch (err) {
+      alert("Błąd w resetowaniu...");
     }
   }
-
   // Wysyłanie słowa do gry
   const submitGuess = async () => {
     if (guess.length !== 5) return alert("Słowo musi mieć 5 liter!");
@@ -55,13 +67,11 @@ function App() {
       const newFeedback = res.data.feedback;
       // Powiadom inne osoby w pokoju o swoim ruchu przez Socket.io
       socket.emit('send_guess', {
-          room: 'global_room', //zamienić na zmienną z inputa, żeby tworzyć własne pokoje
+          room: 'global_room', //zamienić na zmienną z inputa
           user: username,
           guess: guess.toUpperCase(),
           result: newFeedback
       });
-      
-      // Dodajemy nową próbę do tablicy wyników
       setBoard([...board, { word: guess.toUpperCase(), feedback: res.data.feedback }]);
       setGuess('');
     } catch (err) {
@@ -95,7 +105,6 @@ function App() {
               </div>
             ))}
           </div>
-
           <input 
             maxLength={5} 
             value={guess} 
@@ -103,6 +112,10 @@ function App() {
           />
           <button onClick={submitGuess}>Sprawdź</button>
           <button onClick={() => { localStorage.removeItem('token'); setToken(null); }}>Wyloguj</button>
+          <div className="account-settings">
+            <button onClick={handleReset} style={{ backgroundColor: 'orange' }}>Resetuj statystyki</button>
+            <button onClick={handleDeleteAccount} style={{ backgroundColor: 'red' }}>Usuń konto</button>
+          </div>
         </div>
       )}
       <p>{message}</p>
