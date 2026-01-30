@@ -14,7 +14,7 @@ app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 const db = new sqlite3.Database('./wordle.db');
-const words=
+let targetWord = "KOTKI"
 
 // Baza danych
 db.serialize(() => {
@@ -67,6 +67,36 @@ app.post('/api/login', (req, res) => {
   });
 });
 
+// Resetowanie statystyk (update)
+app.put('/api/user/reset', (req, res) => {
+    const token = req.headers['authorization'];
+    if (!token) return res.status(401).json({ error: "Brak tokena" });
+
+    jwt.verify(token, SECRET_KEY, (err, decoded) => {
+        if (err) return res.status(401).json({ error: "Sesja wygasła" });
+
+        db.run("UPDATE users SET score = 0 WHERE id = ?", [decoded.id], function(err) {
+            if (err) return res.status(500).json({ error: "Błąd bazy danych" });
+            res.json({ message: "Statystyki zostały zresetowane!" });
+        });
+    });
+});
+
+// Usuwanie konta
+app.delete('/api/user', (req, res) => {
+    const token = req.headers['authorization'];
+    if (!token) return res.status(401).json({ error: "Brak tokena" });
+
+    jwt.verify(token, SECRET_KEY, (err, decoded) => {
+        if (err) return res.status(401).json({ error: "Sesja wygasła" });
+
+        db.run("DELETE FROM users WHERE id = ?", [decoded.id], function(err) {
+            if (err) return res.status(500).json({ error: "Błąd bazy danych" });
+            res.json({ message: "Twoje konto zostało trwale usunięte." });
+        });
+    });
+});
+
 //logika gry
 app.post('/api/play', (req, res) => {
   const { guess } = req.body;
@@ -77,7 +107,7 @@ app.post('/api/play', (req, res) => {
   }
   const upperGuess = guess.toUpperCase();
   for (let i = 0; i < 5; i++) {
-    if (guess[i] === targetWord[i]) feedback.push('green');
+    if (upperGuess[i] === targetWord[i]) feedback.push('green');
     else if (targetWord.includes(upperGuess[i])) feedback.push('yellow');
     else feedback.push('grey');
   }
@@ -111,14 +141,14 @@ io.on('connection', (socket) => {
     console.log(`Gracz dołączył do pokoju: ${room}`);
   });
 
+  //Logika sprawdzania słowa 
   socket.on('send_guess', (data) => {
-    //Logika sprawdzania słowa 
-    const result = data.guess === "PIESEK" ? "WIN" : "TRY_AGAIN";
-    if(result === "WIN") {
+    const isWin = data.guess.toUpperCase() === targetWord.toUpperCase;
+    if(isWin) {
       mqttClient.publish('wordle/game/win', `Gracz ${data.user} odgadł hasło!`);
       db.run("UPDATE users SET score = score + 1 WHERE username = ?", [data.user]);
     }
-    io.to(data.room).emit('receive_result', { user: data.user, result:data.result });
+    io.to(data.room).emit('receive_result', { user: data.user, result: data.result, isWin: isWin });
   });
 });
 

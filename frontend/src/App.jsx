@@ -33,6 +33,16 @@ function App() {
     }
   };
 
+  const handleReset = async () => {
+    if (!window.confirm("Czy na pewno chcesz zresetować swój wynik?")) return;
+    try {
+      const res = await axios.put("http://localhost:3000/api/user/reset", {}, {
+        headers: { Authorization: token}
+      });
+
+    }
+  }
+
   // Wysyłanie słowa do gry
   const submitGuess = async () => {
     if (guess.length !== 5) return alert("Słowo musi mieć 5 liter!");
@@ -47,7 +57,8 @@ function App() {
       socket.emit('send_guess', {
           room: 'global_room', //zamienić na zmienną z inputa, żeby tworzyć własne pokoje
           user: username,
-          result: newFeedback 
+          guess: guess.toUpperCase(),
+          result: newFeedback
       });
       
       // Dodajemy nową próbę do tablicy wyników
