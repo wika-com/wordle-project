@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { io } from "socket.io-client";
 import './App.css';
+import TopBar from './TopBar.jsx';
 const socket = io("http://localhost:3000");
 
 function App() {
@@ -118,7 +119,7 @@ function App() {
   return (
     <div className="App">
       <h1>Wordle Pro Project</h1>
-
+      <TopBar />
       {!token ? (
         <div className="auth-container">
           <input placeholder="Username" onChange={e => setUsername(e.target.value)} />
