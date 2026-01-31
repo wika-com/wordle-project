@@ -141,7 +141,7 @@ io.on('connection', (socket) => {
 
   //Logika sprawdzania słowa 
   socket.on('send_guess', (data) => {
-    const isWin = data.guess.toUpperCase() === targetWord.toUpperCase;
+    const isWin = data.guess.toUpperCase() === targetWord.toUpperCase();
     if(isWin) {
       mqttClient.publish('wordle/game/win', `Gracz ${data.user} odgadł hasło!`);
       db.run("UPDATE users SET score = score + 1 WHERE username = ?", [data.user]);

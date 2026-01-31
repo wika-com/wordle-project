@@ -5,12 +5,20 @@ import './App.css';
 const socket = io("http://localhost:3000");
 
 function App() {
-  const [username, setUsername] = useState('');
+  const [username, setUsername] = useState(localStorage.getItem('username') || '')
   const [password, setPassword] = useState('');
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [guess, setGuess] = useState('');
   const [board, setBoard] = useState([]); // Historia prób
   const [message, setMessage] = useState('');
+  const [gameOver, setGameOver] = useState(false);
+
+  const startNewGame = () => {
+    setBoard([]);
+    setGuess('');
+    setGameOver(false);
+    setMessage('');
+  };
 
   const handleRegister = async () => {
     try {
@@ -25,7 +33,9 @@ function App() {
     try {
       const res = await axios.post('http://localhost:3000/api/login', { username, password });
       setToken(res.data.token);
+      setUsername(res.data.username);
       localStorage.setItem('token', res.data.token);
+      localStorage.setItem('username', res.data.username);
       setMessage("Zalogowano pomyślnie!");
     } catch (err) {
       alert("Błąd logowania");
@@ -47,17 +57,26 @@ function App() {
   const handleDeleteAccount = async () => {
     if (!window.confirm("Czy napewno chcesz usunąć konto?")) return;
     try {
-      const res = await axios.put("http://localhost:3000/api/user/reset", {}, {
+      const res = await axios.put("http://localhost:3000/api/user", {}, {
         headers: { Authorization: token}
       });
       alert(res.data.message);
+      localStorage.removeItem('token');
+      localStorage.removeItem('username');
+      setToken(null);
     } catch (err) {
       alert("Błąd w resetowaniu...");
     }
   }
   // Wysyłanie słowa do gry
   const submitGuess = async () => {
+    if (gameOver) return;
     if (guess.length !== 5) return alert("Słowo musi mieć 5 liter!");
+    if (board.length >= 6) {
+      setGameOver(true);
+      setMessage("Wykorzystałeś wszystkie 6 prób!");
+      return;
+    }
     try {
       const res = await axios.post('http://localhost:3000/api/play', 
         { guess: guess.toUpperCase() },
@@ -72,8 +91,25 @@ function App() {
           guess: guess.toUpperCase(),
           result: newFeedback
       });
-      setBoard([...board, { word: guess.toUpperCase(), feedback: res.data.feedback }]);
+      const isCorrect = newFeedback.every(status => status === 'green');
+      const newBoard = [...board, { word: guess.toUpperCase(), feedback: res.data.feedback }];
+
+      setBoard(newBoard)
       setGuess('');
+      if (isCorrect) {
+        setGameOver(true);
+        setMessage("BRAWO! Odgadłeś słowo!");
+        // Emitowanie wygranej do socketów
+        socket.emit('send_guess', {
+          room: 'global_room',
+          user: username,
+          guess: guess.toUpperCase(),
+          result: newFeedback
+        });
+      } else if (newBoard.length >= 6) {
+        setGameOver(true);
+        setMessage("KONIEC GRY. Nie udało się odgadnąć słowa.");
+      }
     } catch (err) {
       setMessage("Sesja wygasła. Zaloguj się ponownie.");
     }
@@ -109,8 +145,10 @@ function App() {
             maxLength={5} 
             value={guess} 
             onChange={e => setGuess(e.target.value.toUpperCase())} 
+            disabled={gameOver}
           />
-          <button onClick={submitGuess}>Sprawdź</button>
+          <button onClick={submitGuess} disabled={gameOver}>Sprawdź</button>
+          {gameOver && <button onClick={startNewGame}>Nowa Gra</button>}
           <button onClick={() => { localStorage.removeItem('token'); setToken(null); }}>Wyloguj</button>
           <div className="account-settings">
             <button onClick={handleReset} style={{ backgroundColor: 'orange' }}>Resetuj statystyki</button>
