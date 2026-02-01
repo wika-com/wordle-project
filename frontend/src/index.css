@@ -1,26 +1,27 @@
-/* :root {
+@import url('https://fonts.googleapis.com/css2?family=Atma:wght@300;400;500;600;700&family=Changa+One:ital@0;1&family=Crimson+Pro:ital,wght@0,200..900;1,200..900&family=DM+Serif+Text:ital@0;1&family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Mulish:ital,wght@0,200..1000;1,200..1000&family=Prompt:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto+Slab:wght@100..900&display=swap');
+
+.atma-semibold {
+  font-family: "Atma", system-ui;
+  font-weight: 600;
+  font-style: normal;
+}
+
+.roboto-slab {
+  font-family: "Roboto Slab", serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+:root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
   color-scheme: light dark;
   color:#794A3A;
   background-color: #F7DCAD;
-}*/
-@import url('https://fonts.googleapis.com/css2?family=Atma:wght@300;400;500;600;700&family=Changa+One:ital@0;1&family=Crimson+Pro:ital,wght@0,200..900;1,200..900&family=DM+Serif+Text:ital@0;1&family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Mulish:ital,wght@0,200..1000;1,200..1000&family=Prompt:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto+Slab:wght@100..900&display=swap');
-
-.atma-semibold {
-    font-family: "Atma", system-ui;
-    font-weight: 600;
-    font-style: normal;
 }
-
-.roboto-slab {
-      font-family: "Roboto Slab", serif;
-      font-optical-sizing: auto;
-      font-weight: 400;
-      font-style: normal;
-}
-
+/* 
 body {
   margin: 0;
   display: flex;
@@ -33,5 +34,5 @@ body {
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
-}
+} */
 

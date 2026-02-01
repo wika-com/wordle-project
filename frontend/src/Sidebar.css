@@ -1,0 +1,31 @@
+.sidebar {
+  width: 250px;
+  background-color: #F57F5B;
+  border-right: 1px solid #794A3A;
+  padding: 20px;
+  color: white;
+  height: 100vh;
+}
+
+.room-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 20px;
+}
+
+.room-list li {
+  padding: 12px;
+  margin-bottom: 8px;
+  background-color: #68C7C1;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.room-list li:hover {
+  background-color: #3a3a3c;
+}
+
+.room-list li.active {
+  background-color: #3a3a3c;
+}

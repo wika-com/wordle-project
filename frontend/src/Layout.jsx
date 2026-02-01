@@ -1,24 +1,3 @@
-
-
-// export default function Layout() {
-//     return (
-//         <div className="layout-container">
-//             <TopBar />
-//             <main className="content">
-//                 <Suspense fallback={<div>Ładowanie...</div>}>
-//                     <Routes>
-//                         <Route path="/" element={<Navigate to="/login" replace />} />
-//                         <Route path="/login" element={<LoginPage />} />
-//                         <Route path="/game" element={<GamePage />} />
-//                         <Route path="/settings" element={<StatisticsPage />} />
-//                         <Route path="*" element={<Navigate to="/login" replace />} />
-//                     </Routes>
-//                 </Suspense>
-//             </main>
-//         </div>
-//     );
-// }
-
 import React, { Suspense, useContext } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AppContext } from './context/AppContext.jsx';
@@ -38,23 +17,22 @@ export default function Layout() {
     return (
         <div className="main">
             <TopBar />
-            {userName && <Sidebar />}
             <div className="mainroutes">
+                {/* {userName && <Sidebar />} */}
                 <main className="main-content">
-                <toolbar/>
-                <Routes>
-                    <Route path="/" element={<Navigate to="/login" replace />} />
-                    <Route path="/login" element={
-                        userName ? <Navigate to="/game" replace /> : <LoginPage />
-                    } />
-                    <Route path="/game" element={
-                        <ProtectedRoute><GamePage /></ProtectedRoute>
-                    } />
-                    <Route path="/settings" element={
-                        <ProtectedRoute><StatisticsPage /></ProtectedRoute>
-                    } />
-                    <Route path="*" element={<Navigate to="/login" replace />} />
-                </Routes>
+                    <Routes>
+                        <Route path="/" element={<Navigate to="/login" replace />} />
+                        <Route path="/login" element={
+                            userName ? <Navigate to="/game" replace /> : <LoginPage />
+                        } />
+                        <Route path="/game" element={
+                            <ProtectedRoute><GamePage /></ProtectedRoute>
+                        } />
+                        <Route path="/settings" element={
+                            <ProtectedRoute><StatisticsPage /></ProtectedRoute>
+                        } />
+                        <Route path="*" element={<Navigate to="/login" replace />} />
+                    </Routes>
                 </main>
             </div>
         </div>

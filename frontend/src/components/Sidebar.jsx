@@ -1,7 +1,7 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../context/AppContext.jsx';
 import socket from '../socket';
-import '../Layout.css';
+import '../Sidebar.css';
 import Chat from './Chat.jsx';
 
 export default function Sidebar() {

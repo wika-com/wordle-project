@@ -2,6 +2,8 @@ import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AppContext } from '../context/AppContext.jsx';
 import socket from "../socket"; // Upewnij się, że masz ten plik konfiguracyjny socketu
+import '../GamePage.css';
+import Sidebar from '../components/Sidebar.jsx';
 
 export default function GamePage() {
     // Pobieramy dane zalogowanego użytkownika z kontekstu
@@ -103,46 +105,49 @@ export default function GamePage() {
     };
 
     return (
-        <div className="game-container">
-            <p className="welcome-msg">Witaj, <strong>{data.userName}</strong>!</p>
-            
-            <div className="grid">
-                {board.map((attempt, i) => (
-                    <div key={i} className="row">
-                        {attempt.word.split('').map((char, j) => (
-                            <span key={j} className={`tile ${attempt.feedback[j]}`}>
-                                {char}
-                            </span>
-                        ))}
-                    </div>
-                ))}
-                {/* Puste rzędy dla lepszego efektu wizualnego (opcjonalnie) */}
-                {[...Array(Math.max(0, 6 - board.length))].map((_, i) => (
-                    <div key={`empty-${i}`} className="row empty">
-                        {[...Array(5)].map((_, j) => <span key={j} className="tile"></span>)}
-                    </div>
-                ))}
-            </div>
+        <div className='maingame'>
+            <Sidebar />
+            <div className="game-container">
+                <p className="welcome-msg">Witaj, <strong>{data.userName}</strong>!</p>
+                <div className="grid">
+                    {board.map((attempt, i) => (
+                        <div key={i} className="row">
+                            {attempt.word.split('').map((char, j) => (
+                                <span key={j} className={`tile ${attempt.feedback[j]}`}>
+                                    {char}
+                                </span>
+                            ))}
+                        </div>
+                    ))}
+                    {/* Puste rzędy dla lepszego efektu wizualnego (opcjonalnie) */}
+                    {[...Array(Math.max(0, 6 - board.length))].map((_, i) => (
+                        <div key={`empty-${i}`} className="row empty">
+                            {[...Array(5)].map((_, j) => <span key={j} className="tile"></span>)}
+                        </div>
+                    ))}
+                </div>
 
-            <div className="game-controls">
-                <input 
-                    maxLength={5} 
-                    value={guess} 
-                    onChange={e => setGuess(e.target.value.toUpperCase())} 
-                    disabled={gameOver}
-                    onKeyPress={(e) => e.key === 'Enter' && submitGuess()}
-                    placeholder="WPISZ SŁOWO"
-                />
-                <button className="btn-submit" onClick={submitGuess} disabled={gameOver}>Sprawdź</button>
-                {gameOver && <button className="btn-newgame" onClick={startNewGame}>Nowa Gra</button>}
-            </div>
+                <div className="game-controls">
+                    <input 
+                        maxLength={5} 
+                        value={guess} 
+                        onChange={e => setGuess(e.target.value.toUpperCase())} 
+                        disabled={gameOver}
+                        onKeyPress={(e) => e.key === 'Enter' && submitGuess()}
+                        placeholder="WPISZ SŁOWO"
+                    />
+                    <button className="btn-submit" onClick={submitGuess} disabled={gameOver}>Sprawdź</button>
+                    {gameOver && <button className="btn-newgame" onClick={startNewGame}>Nowa Gra</button>}
+                </div>
 
-            {message && <p className="game-message">{message}</p>}
+                {message && <p className="game-message">{message}</p>}
 
-            <div className="account-settings">
-                <button onClick={handleReset} style={{ backgroundColor: 'orange' }}>Resetuj statystyki</button>
-                <button onClick={handleDeleteAccount} style={{ backgroundColor: 'red' }}>Usuń konto</button>
+                <div className="account-settings">
+                    <button onClick={handleReset} style={{ backgroundColor: 'orange' }}>Resetuj statystyki</button>
+                    <button onClick={handleDeleteAccount} style={{ backgroundColor: 'red' }}>Usuń konto</button>
+                </div>
             </div>
         </div>
+        
     );
 }

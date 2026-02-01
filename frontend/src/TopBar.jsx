@@ -13,27 +13,25 @@ export default function TopBar() {
     }
 
     return (
-        <header className="topbar">
+        <header className="topbar" >
             <div className="topbar-left">
                 <h1 className="logo">GuessIt</h1>
             </div>
             <nav className="topbar-center">
                 <button 
                     className={`link ${location.pathname === '/game' ? 'active' : ''}`}
-                    onClick={() => nav('/game')}
-                >
+                    onClick={() => nav('/game')}>
                     Gra
                 </button>
                 <button 
-                    className={`nlink ${location.pathname === '/settings' ? 'active' : ''}`}
-                    onClick={() => nav('/settings')}
-                >
+                    className={`link ${location.pathname === '/settings' ? 'active' : ''}`}
+                    onClick={() => nav('/settings')}>
                     Ranking
                 </button>
             </nav>
             <div className="topbar-right">
-                <span className="user-info">Gracz: <strong>{data.userName}</strong></span>
-                <button className="logout-button" onClick={() => {
+                <span className="user">Gracz: <strong>{data.userName}</strong></span>
+                <button className="logout" onClick={() => {
                     data.logout();
                     nav('/login');
                 }}>

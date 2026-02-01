@@ -1,0 +1,146 @@
+body{
+    /* min-height: 80vh;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-content: center; */
+    /* margin: auto;
+    background-color: #F7DCAD;
+    color: #794A3A;
+    font-family: "Atma", sans-serif; */
+}
+
+.maingame{
+    display: flex;
+    flex-direction: row;
+}
+.game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    width: 100%;
+}
+
+.welcome-msg {
+    font-size: 1.5rem;
+    color: #794A3A;
+    margin-bottom: 20px;
+}
+
+/* Siatka gry */
+.grid {
+    display: grid;
+    grid-template-rows: repeat(6, 1fr);
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+}
+
+.tile {
+    width: 60px;
+    height: 60px;
+    border: 3px solid #794A3A;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    background-color: #fffaf0;
+    border-radius: 8px;
+    transition: transform 0.2s;
+}
+
+/* Kolory kafelków po sprawdzeniu */
+.tile.green {
+    background-color: #6aaa64; /* Standardowy zielony Wordle */
+    color: white;
+    border-color: #6aaa64;
+}
+
+.tile.yellow {
+    background-color: #c9b458; /* Standardowy żółty Wordle */
+    color: white;
+    border-color: #c9b458;
+}
+
+.tile.grey {
+    background-color: #787c7e; /* Standardowy szary Wordle */
+    color: white;
+    border-color: #787c7e;
+}
+
+/* Kontrolki gry */
+.game-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.game-controls input {
+    padding: 10px 15px;
+    font-size: 1.2rem;
+    border: 3px solid #794A3A;
+    border-radius: 25px;
+    background-color: white;
+    color: #794A3A;
+    text-align: center;
+    width: 200px;
+    font-family: inherit;
+}
+
+.btn-submit {
+    background-color: #68C7C1;
+    color: white;
+    border: none;
+    padding: 10px 30px;
+    font-size: 1.2rem;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+.btn-submit:hover:not(:disabled) {
+    background-color: #F57F5B;
+}
+
+.btn-submit:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.game-message {
+    font-weight: bold;
+    font-size: 1.3rem;
+    margin: 10px 0;
+    padding: 10px 20px;
+    border-radius: 10px;
+    background-color: #F57F5B;
+    color: white;
+}
+
+/* Sekcja ustawień na dole */
+.account-settings {
+    margin-top: 40px;
+    display: flex;
+    gap: 10px;
+}
+
+.account-settings button {
+    border: none;
+    padding: 8px 15px;
+    color: white;
+    border-radius: 15px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.9rem;
+}
