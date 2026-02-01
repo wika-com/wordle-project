@@ -1,7 +1,7 @@
 .sidebar {
   width: 250px;
-  background-color: #F57F5B;
-  border-right: 1px solid #794A3A;
+  background-color: #FFC1C1;
+  border-right: 1px solid hsl(15, 35%, 35%);
   padding: 20px;
   color: white;
   height: 100vh;
@@ -17,7 +17,7 @@
 .room-list li {
   padding: 12px;
   margin-bottom: 8px;
-  background-color: #7cccc7;
+  background-color: #ABCF82;
   border-radius: 5px;
   cursor: pointer;
   transition: 0.3s;

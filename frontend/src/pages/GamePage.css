@@ -70,35 +70,34 @@
     margin-bottom: 20px;
 }
 
-.game-controls input {
+.controls input {
     padding: 10px 15px;
     font-size: 1.2rem;
-    border: 3px solid #794A3A;
+    border: 3px solid #333b2a;
     border-radius: 25px;
     background-color: white;
-    color: #794A3A;
+    color: #333b2a;
     text-align: center;
     width: 200px;
     font-family: inherit;
 }
 
-.btn-submit {
-    background-color: #68C7C1;
+.submit {
+    background-color: #ABCF82;
     color: white;
     border: none;
-    padding: 10px 30px;
-    font-size: 1.2rem;
+    padding: 10px 10px;
+    font-size: 1rem;
     border-radius: 25px;
     cursor: pointer;
     font-weight: bold;
-    transition: background 0.3s;
 }
 
-.btn-submit:hover:not(:disabled) {
-    background-color: #F57F5B;
+.submit:hover:not(:disabled) {
+    background-color: #f4a261;
 }
 
-.btn-submit:disabled {
+.submit:disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }
@@ -109,7 +108,7 @@
     margin: 10px 0;
     padding: 10px 20px;
     border-radius: 10px;
-    background-color: #F57F5B;
+    background-color: #f4a261;
     color: white;
 }
 
@@ -128,4 +127,5 @@
     cursor: pointer;
     font-family: inherit;
     font-size: 0.9rem;
+    background-color: #FFC1C6;
 }

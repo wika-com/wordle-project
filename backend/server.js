@@ -14,7 +14,17 @@ app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 const db = new sqlite3.Database('./wordle.db');
-let targetWord = "KOTKI"
+const userSessions = {};
+
+function verifyToken(req, res, next) {
+    const token = req.headers['authorization'];
+    if (!token) return res.status(401).json({ error: "Brak tokena" });
+    jwt.verify(token, SECRET_KEY, (err, decoded) => {
+        if (err) return res.status(401).json({ error: "Sesja wygasła" });
+        req.userId = decoded.id;
+        next();
+    });
+}
 
 // Baza danych
 db.serialize(() => {
@@ -26,20 +36,58 @@ db.serialize(() => {
   )`);
 });
 
-async function updateTargetWord() {
-    const url = `https://random-word-api.herokuapp.com/word?length=5`;
-    try {
-        const response = await fetch(url);
-        if (response.ok) {
-            const words = await response.json();
-            targetWord = words[0].toUpperCase();
-            console.log(`Nowe słowo dnia: ${targetWord}`);
-        }
-    } catch (e) {
-        console.error("Nie udało się pobrać słowa, zostaję przy domyślnym.");
+// async function updateTargetWord() {
+//     const url = `https://random-word-api.herokuapp.com/word?length=5`;
+//     try {
+//         const response = await fetch(url);
+//         if (response.ok) {
+//             const words = await response.json();
+//             targetWord = words[0].toUpperCase();
+//             console.log(`Nowe słowo dnia: ${targetWord}`);
+//         }
+//     } catch (e) {
+//         console.error("Nie udało się pobrać słowa, zostaję przy domyślnym.");
+//     }
+// }
+// updateTargetWord();
+
+async function generateNewWord(userId) {
+  const url = `https://random-word-api.herokuapp.com/word?length=5`;
+  try {
+    const response = await fetch(url);
+    if (response.ok) {
+        const words = await response.json();
+        const word = words[0].toUpperCase();
+        
+        // Zapisujemy słowo tylko dla tego konkretnego użytkownika
+        userSessions[userId] = {
+            word: word,
+            startTime: new Date()
+        };
+        console.log(`Użytkownik ${userId} otrzymał słowo: ${word}`);
+        return word;
     }
+  } catch (e) {
+      // Fallback w razie błędu API
+      userSessions[userId] = { word: "KOTKI" };
+      return "KOTKI";
+  }
 }
-updateTargetWord();
+app.post('/api/new-game', verifyToken, async (req, res) => {
+  try{
+    console.log("Generowanie nowej gry dla ID:", req.userId);
+    const word = await generateNewWord(req.userId);
+    res.json({ message: "Nowe słowo wylosowane!", status:"ready" });
+  } catch (err) {
+    console.error("Błąd generowania słowa:", error);
+    res.status(500).json({ error: "Błąd serwera przy losowaniu słowa" });
+  }  
+});
+
+// app.post('/api/new-game', verifyToken, async (req, res) => {
+//     const word = await generateNewWord(req.userId);
+//     res.json({ message: "Nowe słowo wylosowane!", status: "ready" });
+// });
 
 app.post('/api/register', async (req, res) => {
   try {
@@ -60,12 +108,24 @@ app.post('/api/login', (req, res) => {
   db.get("SELECT * FROM users WHERE username = ?", [username], async (err, user) => {
     if (user && await bcrypt.compare(password, user.password)) {
       const token = jwt.sign({ id: user.id, username: user.username }, SECRET_KEY);
-      res.json({ token, username: user.username });
+      res.json({ token, username: user.username, userId:user.id });
     } else {
       res.status(401).json({ error: "Błędne dane" });
     }
   });
 });
+
+// app.post('/api/new-game', verifyToken, (req, res) => {
+//     const userId = req.userId; // ID z tokena
+//     const words = ["KOTKI", "RYBKA", "DOMKI", "KWIAT"];
+//     const newWord = words[Math.floor(Math.random() * words.length)];
+    
+//     userSessions[userId] = {
+//         word: newWord,
+//         attempts: 0
+//     };
+//     res.json({ message: "Nowe słowo wylosowane!" });
+// });
 
 // Resetowanie statystyk (update)
 app.put('/api/user/reset', (req, res) => {
@@ -98,16 +158,21 @@ app.delete('/api/user', (req, res) => {
 });
 
 //logika gry
-app.post('/api/play', (req, res) => {
+app.post('/api/play', verifyToken, (req, res) => {
   const { guess } = req.body;
+  const userId = req.userId;
   const feedback = [];
+  if (!userSessions[userId]) {
+    return res.status(400).json({ error: "Najpierw zacznij nową grę!" });
+  }
   if (!guess || guess.length !== 5) {
         return res.status(400).json({ error: "Słowo musi mieć 5 liter" });
   }
   const upperGuess = guess.toUpperCase();
+  const userWord = userSessions[req.userId].word;
   for (let i = 0; i < 5; i++) {
-    if (upperGuess[i] === targetWord[i]) feedback.push('green');
-    else if (targetWord.includes(upperGuess[i])) feedback.push('yellow');
+    if (upperGuess[i] === userWord[i]) feedback.push('green');
+    else if (userWord.includes(upperGuess[i])) feedback.push('yellow');
     else feedback.push('grey');
   }
   res.json({ feedback });
@@ -159,7 +224,7 @@ io.on('connection', (socket) => {
     const { room, user, message } = data;
     const timestamp = new Date().toLocaleTimeString();
 
-    // Wysyłamy wiadomość do wszystkich w pokoju, włącznie z nadawcą
+    // wiadomość do wszystkich w pokoju, włącznie z nadawcą
     io.to(room).emit('receive_message', {
       room,
       user,
@@ -172,11 +237,13 @@ io.on('connection', (socket) => {
 
   //Logika sprawdzania słowa 
   socket.on('send_guess', (data) => {
-    const isWin = data.guess.toUpperCase() === targetWord.toUpperCase();
+    const userId = data.userId;
+    const session = userSessions[userId];
+    if (!session) return;
+    const isWin = data.guess.toUpperCase() === session.word;
     if(isWin) {
       mqttClient.publish('wordle/game/win', `Gracz ${data.user} odgadł hasło!`);
       db.run("UPDATE users SET score = score + 1 WHERE username = ?", [data.user]);
-      updateTargetWord();
     }
     io.to(data.room).emit('receive_result', { user: data.user, result: data.result, isWin: isWin });
   });

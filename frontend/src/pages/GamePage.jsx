@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import axios from 'axios';
 import { AppContext } from '../context/AppContext.jsx';
 import socket from "../socket";
@@ -12,6 +12,11 @@ export default function GamePage() {
     const [board, setBoard] = useState([]); // Historia prób
     const [message, setMessage] = useState('');
     const [gameOver, setGameOver] = useState(false);
+    const [gameStarted, setGameStarted] = useState(false);
+    const didInit = useRef(false);
+
+
+
 
     // Inicjalizacja połączenia socket
     useEffect(() => {
@@ -29,12 +34,33 @@ export default function GamePage() {
         };
     }, [data.activeRoom, data.userName]);
 
-    const startNewGame = () => {
-        setBoard([]);
-        setGuess('');
-        setGameOver(false);
-        setMessage('');
+    const startNewGame = async () => {
+        console.log("START NEW GAME, token =", data.token);
+        try {
+            await axios.post('http://localhost:3000/api/new-game', {}, {
+            headers: { Authorization: data.token }
+            });
+            setBoard([]);
+            setGuess('');
+            setGameOver(false);
+            setMessage('');
+        } catch (err) {
+            alert("Nie udało się zacząć nowej gry :(")
+        }  
     };
+    useEffect(() => {
+        if(!data.token) return;
+        if (didInit.current) return;
+        didInit.current = true;
+        startNewGame();
+    }, []);
+
+
+    // useEffect(() => {
+    //     if (board.length === 0 && !gameOver) {
+    //         startNewGame();
+    //     }
+    // }, []);
 
     // Resetowanie statystyk
     const handleReset = async () => {
@@ -88,7 +114,8 @@ export default function GamePage() {
                 user: data.userName,
                 guess: guess.toUpperCase(),
                 result: newFeedback,
-                isWin: isCorrect
+                isWin: isCorrect,
+                userId: data.userId
             });
 
             if (isCorrect) {
@@ -134,15 +161,15 @@ export default function GamePage() {
                         onKeyPress={(e) => e.key === 'Enter' && submitGuess()}
                         placeholder="WPISZ SŁOWO"
                     />
-                    <button className="btn-submit" onClick={submitGuess} disabled={gameOver}>Sprawdź</button>
+                    <button className="submit" onClick={submitGuess} disabled={gameOver}>Sprawdź</button>
                     {gameOver && <button className="btn-newgame" onClick={startNewGame}>Nowa Gra</button>}
                 </div>
 
                 {message && <p className="game-message">{message}</p>}
 
                 <div className="account-settings">
-                    <button onClick={handleReset} style={{ backgroundColor: 'orange' }}>Resetuj statystyki</button>
-                    <button onClick={handleDeleteAccount} style={{ backgroundColor: 'red' }}>Usuń konto</button>
+                    <button onClick={handleReset}>Resetuj statystyki</button>
+                    <button onClick={handleDeleteAccount}>Usuń konto</button>
                 </div>
             </div>
         </div>

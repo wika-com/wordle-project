@@ -25,9 +25,9 @@
 }
 h1{
     font-family: "Atma", sans-serif;
-    font-size: larger;
+    font-size: 4vh;
     justify-content: flex-start;
-    color: #DD5341;
+    color: #d07777;
 }
 #box {
     display: flex;
@@ -41,7 +41,8 @@ h1{
     font-family: "Atma", sans-serif;
     justify-content: center;
     margin-bottom: 3vh;
-    font-size: 5vh;
+    font-size: 10vh;
+    color: #ABCF82;
 }
 input{
     border-radius: 15px;
@@ -49,13 +50,13 @@ input{
     margin: 0.5rem;
 }
 button {
-    background-color: #DD5341;
+    background-color: #ABCF82;
     font-size: 2vh;
     padding: 1rem;
     width: 7rem;
     margin: 0.5rem;
     border-radius: 15px;
-    border-color: #794A3A;
+    border-color: #333b2a;
 
 }
 

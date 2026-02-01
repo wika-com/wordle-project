@@ -14,7 +14,7 @@ body.dark .topbar{
     /* position: fixed; */
     border-radius: 20px 20px 20px 0;
     z-index: 1;
-    background-color: #68C7C1;
+    background-color: #B6ACE4;
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
@@ -24,7 +24,7 @@ body.dark .topbar{
 }
 .first{
   border-radius: 20px 20px 20px 0;
-  background-color: #68C7C1;
+  background-color: #B6ACE4;
   display: flex;
   flex-wrap: wrap;
   gap: 15px;
@@ -33,7 +33,7 @@ body.dark .topbar{
 #topbutton{
   height: 40px;
   padding: 2px;
-  border: 2px solid #794A3A;
+  border: 2px solid #ABCF82;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -45,7 +45,7 @@ body.dark .topbar{
     font-size: 4vh;
     font-weight: bold;
     margin-left: 3vh;
-    color: #DD5341;
+    color: white;
 }
 .topbar-center{
     display: flex;
@@ -57,15 +57,15 @@ body.dark .topbar{
     align-items: flex-end;
     flex-direction: column;
     color: #77A68A;
-    background-color: #68C7C1;
+    background-color: #B6ACE4;
     margin-right: 10px;
 }
 .user {
     font-family: "Atma", sans-serif;
     margin:auto;
     font-size: 1rem;
-    color: brown;
-    background-color: #68C7C1;
+    color: #42572b;
+    background-color: #B6ACE4;
 }
 .logout{
   display: inline-block;
