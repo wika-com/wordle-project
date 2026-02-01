@@ -2,7 +2,7 @@ import React, { useState, useContext } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../context/AppContext.jsx';
-import "../LoginPage.css"
+import "./LoginPage.css"
 
 export default function LoginPage() {
     // Stany przeniesione bezpośrednio z Twojego App.jsx

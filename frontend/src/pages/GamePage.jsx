@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AppContext } from '../context/AppContext.jsx';
-import socket from "../socket"; // Upewnij się, że masz ten plik konfiguracyjny socketu
-import '../GamePage.css';
+import socket from "../socket";
+// import '../style/GamePage.css';
+import "./GamePage.css";
 import Sidebar from '../components/Sidebar.jsx';
 
 export default function GamePage() {
-    // Pobieramy dane zalogowanego użytkownika z kontekstu
     const data = useContext(AppContext);
     const [guess, setGuess] = useState('');
     const [board, setBoard] = useState([]); // Historia prób
@@ -18,7 +18,7 @@ export default function GamePage() {
         if (data.activeRoom && data.userName) {
         socket.emit('join_room', { room: data.activeRoom, user: data.userName });
         }
-        // Czyścimy nasłuchiwanie przy wyjściu z komponentu
+        //nasłuchiwanie przy wyjściu z komponentu
         socket.on('receive_result', (payload) => {
             if (payload.user !== data.userName) {
                 console.log(`Gracz ${payload.user} w pokoju ${data.activeRoom} wysłał słowo!`);
@@ -29,7 +29,6 @@ export default function GamePage() {
         };
     }, [data.activeRoom, data.userName]);
 
-    // Funkcja nowej gry
     const startNewGame = () => {
         setBoard([]);
         setGuess('');
@@ -58,7 +57,7 @@ export default function GamePage() {
                 headers: { Authorization: data.token }
             });
             alert(res.data.message);
-            data.logout(); // Wylogowanie po usunięciu konta
+            data.logout();
         } catch (err) {
             alert("Błąd w usuwaniu konta...");
         }
@@ -108,7 +107,7 @@ export default function GamePage() {
         <div className='maingame'>
             <Sidebar />
             <div className="game-container">
-                <p className="welcome-msg">Witaj, <strong>{data.userName}</strong>!</p>
+                <p className="welcome">Witaj, <strong>{data.userName}</strong>!</p>
                 <div className="grid">
                     {board.map((attempt, i) => (
                         <div key={i} className="row">
@@ -119,7 +118,6 @@ export default function GamePage() {
                             ))}
                         </div>
                     ))}
-                    {/* Puste rzędy dla lepszego efektu wizualnego (opcjonalnie) */}
                     {[...Array(Math.max(0, 6 - board.length))].map((_, i) => (
                         <div key={`empty-${i}`} className="row empty">
                             {[...Array(5)].map((_, j) => <span key={j} className="tile"></span>)}
@@ -127,7 +125,7 @@ export default function GamePage() {
                     ))}
                 </div>
 
-                <div className="game-controls">
+                <div className="controls">
                     <input 
                         maxLength={5} 
                         value={guess} 

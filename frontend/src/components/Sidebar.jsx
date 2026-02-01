@@ -1,7 +1,8 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../context/AppContext.jsx';
 import socket from '../socket';
-import '../Sidebar.css';
+// import '../style/Sidebar.css';
+import "./Sidebar.css";
 import Chat from './Chat.jsx';
 
 export default function Sidebar() {
@@ -13,7 +14,6 @@ export default function Sidebar() {
             socket.emit('join_room', { room: data.activeRoom, user: data.userName });
         }
     }, [data.userName, data.activeRoom]);
-
     const changeRoom = (roomName) => {
         data.setActiveRoom(roomName);
         console.log("Zmieniono pokój na:", roomName);

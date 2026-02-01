@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { AppContext } from './context/AppContext.jsx';
-import './TopBar.css';
+import { AppContext } from '../context/AppContext.jsx';
+import './Topbar.css';
 
 export default function TopBar() {
     const data = useContext(AppContext);

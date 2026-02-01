@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from "../context/AppContext.jsx";
-import "../StatisticPage.css"; 
+import "./StatisticsPage.css"; 
 
 export default function StatisticsPage() {
     const data = useContext(AppContext);
