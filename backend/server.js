@@ -135,6 +135,10 @@ mqttClient.on('connect', () => {
 io.on('connection', (socket) => {
   console.log('Nowy gracz połączony:', socket.id);
   socket.on('join_room', (room) => {
+    const currentRooms = Array.from(socket.rooms);
+    currentRooms.forEach(room => {
+      if (room !== socket.id) socket.leave(room);
+    });
     socket.join(room);
     console.log(`Gracz dołączył do pokoju: ${room}`);
   });

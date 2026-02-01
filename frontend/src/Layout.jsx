@@ -26,6 +26,7 @@ import TopBar from './TopBar.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import GamePage from './pages/GamePage.jsx';
 import StatisticsPage from './pages/StatisticsPage.jsx';
+import Sidebar from './components/Sidebar.jsx';
 
 const ProtectedRoute = ({ children }) => {
     const { userName } = useContext(AppContext);
@@ -37,7 +38,9 @@ export default function Layout() {
     return (
         <div className="layout">
             <TopBar />
-            <main className="main-content">
+            <div className="main-wrapper">
+                {userName && <Sidebar />}
+                <main className="main-content">
                 <Routes>
                     <Route path="/" element={<Navigate to="/login" replace />} />
                     <Route path="/login" element={
@@ -52,6 +55,8 @@ export default function Layout() {
                     <Route path="*" element={<Navigate to="/login" replace />} />
                 </Routes>
             </main>
+            </div>
+            
         </div>
     );
 }
