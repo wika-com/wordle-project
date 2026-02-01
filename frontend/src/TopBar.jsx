@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { AppContext } from '../context/AppContext.js';
+import { AppContext } from './context/AppContext.jsx';
 import './TopBar.css';
 
 export default function TopBar() {

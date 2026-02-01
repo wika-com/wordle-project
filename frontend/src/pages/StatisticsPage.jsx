@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { AppContext } from "../context/AppContext.js";
+import { AppContext } from "../context/AppContext.jsx";
 import "../StatisticPage.css"; 
 
 export default function StatisticsPage() {
