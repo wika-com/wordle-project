@@ -9,6 +9,10 @@
   flex-grow: 1;
   overflow-y: auto;
   padding: 20px;
+  display: flex;
+  margin: auto;
+  justify-content: center;
+  align-items: center;
 }
 
 /* Sidebar.css */

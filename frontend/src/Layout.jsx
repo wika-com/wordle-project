@@ -54,9 +54,8 @@ export default function Layout() {
                     } />
                     <Route path="*" element={<Navigate to="/login" replace />} />
                 </Routes>
-            </main>
+                </main>
             </div>
-            
         </div>
     );
 }

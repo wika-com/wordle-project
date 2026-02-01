@@ -14,11 +14,10 @@ export default function Sidebar() {
         }
     }, [data.userName, data.activeRoom]);
 
-  const changeRoom = (roomName) => {
-    data.setActiveRoom(roomName);
-    socket.emit('join_room', { room: roomName, user: data.userName });
-    console.log("Zmieniono pokój na:", roomName);
-  };
+    const changeRoom = (roomName) => {
+        data.setActiveRoom(roomName);
+        console.log("Zmieniono pokój na:", roomName);
+    };
 
   return (
     <aside className="sidebar">

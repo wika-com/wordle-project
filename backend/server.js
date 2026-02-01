@@ -136,31 +136,38 @@ const rooms = ['Globalny', 'Pokój 1', 'Pokój 2', 'Eksperci'];
 io.on('connection', (socket) => {
   console.log('Nowy gracz połączony:', socket.id);
 
-  socket.on('join_room', (room) => {
-    const currentRooms = Array.from(socket.rooms);
-    currentRooms.forEach(room => {
-      if (room !== socket.id) socket.leave(room);
-    });
+  socket.on('join_room', (data) => {
+    const room = typeof data === 'string' ? data : data.room;
+    const user = data.user || "Anonim";
+    // socket.rooms.forEach((room) => {
+    //   if (room !== socket.id) socket.leave(room);
+    // });
 
+    for (const r of socket.rooms) {
+      if (r !== socket.id) socket.leave(r);
+    }
     socket.join(room);
     console.log(`Gracz dołączył do pokoju: ${room}`);
+
     socket.to(room).emit('notification', {
       message: `Użytkownik ${user} dołączył do gry!`
     });
     
-    socket.on('send_message', (data) => {
+  });
+
+  socket.on('send_message', (data) => {
     const { room, user, message } = data;
     const timestamp = new Date().toLocaleTimeString();
 
     // Wysyłamy wiadomość do wszystkich w pokoju, włącznie z nadawcą
     io.to(room).emit('receive_message', {
-        user,
-        message,
-        timestamp
+      room,
+      user,
+      message,
+      timestamp
     });
     // Publikacja na MQTT dla logów
       mqttClient.publish(`wordle/chat/${room}`, `${user}: ${message}`);
-    });
   });
 
   //Logika sprawdzania słowa 
