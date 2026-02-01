@@ -36,11 +36,12 @@ export default function Layout() {
     const { userName } = useContext(AppContext);
 
     return (
-        <div className="layout">
+        <div className="main">
             <TopBar />
-            <div className="main-wrapper">
-                {userName && <Sidebar />}
+            {userName && <Sidebar />}
+            <div className="mainroutes">
                 <main className="main-content">
+                <toolbar/>
                 <Routes>
                     <Route path="/" element={<Navigate to="/login" replace />} />
                     <Route path="/login" element={

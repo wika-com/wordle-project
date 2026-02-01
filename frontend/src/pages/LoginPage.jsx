@@ -2,6 +2,7 @@ import React, { useState, useContext } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../context/AppContext.jsx';
+import "../LoginPage.css"
 
 export default function LoginPage() {
     // Stany przeniesione bezpośrednio z Twojego App.jsx
@@ -43,22 +44,14 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="App">
-            <h1>Wordle Pro Project</h1>
-            <div className="auth-container">
-                <input 
-                    placeholder="Username" 
-                    onChange={e => setUsername(e.target.value)} 
-                    value={username}
-                />
-                <input 
-                    type="password" 
-                    placeholder="Password" 
-                    onChange={e => setPassword(e.target.value)} 
-                    value={password}
-                />
-                <button onClick={handleRegister}>Register</button>
-                <button onClick={handleLogin}>Login</button>
+        <div className="App" id="block">
+            <h1>Guess<span id="it">it</span></h1>
+            <h3 id="text">Login</h3>
+            <div className="box">
+                <input placeholder="Username" onChange={e => setUsername(e.target.value)} value={username}/>
+                <input type="password" placeholder="Password" onChange={e => setPassword(e.target.value)} value={password}/>
+                <button id="button" onClick={handleRegister}>Register</button>
+                <button id="button" onClick={handleLogin}>Login</button>
             </div>
             {message && <p className="message">{message}</p>}
         </div>

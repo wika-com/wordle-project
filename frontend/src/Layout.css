@@ -1,7 +1,7 @@
 /* Layout.css */
-.main-wrapper {
-  display: flex; /* Sidebar i Main obok siebie */
-  margin-top: 60px;
+/* .main-wrapper { */
+  /* display: flex; Sidebar i Main obok siebie */
+  /* margin-top: 60px;
   height: calc(100vh - 60px);
 }
 
@@ -13,10 +13,10 @@
   margin: auto;
   justify-content: center;
   align-items: center;
-}
+} */
 
 /* Sidebar.css */
-.sidebar {
+/* .sidebar {
   width: 250px;
   background-color: #1e1e1e;
   border-right: 1px solid #3a3a3c;
@@ -46,4 +46,32 @@
 .room-list li.active {
   border-left: 4px solid #6aaa64;
   background-color: #3a3a3c;
+} */
+
+.main {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+}
+.card1 {
+    width: 20%;
+}
+.card2 {
+    width: 60%;
+}
+
+body {
+    background: #F7DCAD;
+    color: #794A3A;
+    font-family: "Atma", sans-serif;
+}
+
+body.dark {
+    background: #1a1423;
+    color: #eaeaea;
+}
+@media (max-width: 900px) {
+    .main {
+        flex-direction: column; /* Sidebar wskakuje nad czat na mobile */
+    }
 }

@@ -1,4 +1,4 @@
-body{
+/* body{
     min-height: 80vh;
     display: flex;
     justify-content: center;
@@ -6,4 +6,49 @@ body{
     margin: auto;
     background-color: #F5EBE0;
     color: #4A5759;
+    
+} */
+
+#block {
+  min-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-content: center;
+  margin: auto;
+  background-color: #F7DCAD;
+  color: #794A3A;
+}
+#it{
+    font-weight: bold;
+}
+#box {
+    display: inline-block;
+    margin: auto;
+}
+#text {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 3vh;
+    font-size: 5vh;
+}
+input{
+    border-radius: 15px;
+    padding: 1rem;
+    margin: 0.5rem;
+}
+button {
+    background-color: #DD5341;
+    font-size: 2vh;
+    padding: 1rem;
+    width: 7rem;
+    margin: 0.5rem;
+    border-radius: 15px;
+    border-color: #794A3A;
+
+}
+
+body.dark #block.MuiPaper-root{
+  background: #3d314a;
+  color: #fff;
 }
