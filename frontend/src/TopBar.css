@@ -19,13 +19,33 @@ body.dark .topbar{
     justify-content: space-between;
     flex-wrap: wrap;
     width: 100%;
+    align-content: center;
+    align-items: center;
 }
-.logo {
+.first{
+  border-radius: 20px 20px 20px 0;
+  background-color: #68C7C1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  align-items: center;
+}
+#topbutton{
+  height: 40px;
+  padding: 2px;
+  border: 2px solid #794A3A;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: "Atma", sans-serif;
+  /* display: flex; */
+}
+.logo2 {
     font-family: "Atma", sans-serif;
     font-size: 4vh;
     font-weight: bold;
     margin-left: 3vh;
-    color: coral;
+    color: #DD5341;
 }
 .topbar-center{
     display: flex;
@@ -48,8 +68,8 @@ body.dark .topbar{
     background-color: #68C7C1;
 }
 .logout{
-    display: inline-block;
-    margin-left: 5px;
+  display: inline-block;
+  margin-left: 5px;
 }
 
 @media (max-width: 600px) {

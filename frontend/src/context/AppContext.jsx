@@ -1,24 +1,25 @@
 import React, { createContext, useState } from 'react';
+import Cookies from 'js-cookie'
 
 export const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
-    const [userName, setUserName] = useState(localStorage.getItem('username') || null);
-    const [token, setToken] = useState(localStorage.getItem('token') || null);
+    const [userName, setUserName] = useState(Cookies.get('username') || null);
+    const [token, setToken] = useState(Cookies.get('token') || null);
     const [activeRoom, setActiveRoom] = useState('Globalny');
 
     const login = (user, tkn) => {
         setUserName(user);
         setToken(tkn);
-        localStorage.setItem('username', user);
-        localStorage.setItem('token', tkn);
+        Cookies.set('username', user,{expires:1, sameSite:'strict'});
+        Cookies.set('token', tkn, {expires:1, sameSite:'strict'});
     };
 
     const logout = () => {
         setUserName(null);
         setToken(null);
-        localStorage.removeItem('username');
-        localStorage.removeItem('token');
+        Cookies.remove('username');
+        Cookies.remove('token');
     };
 
     return (

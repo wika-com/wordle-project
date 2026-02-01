@@ -35,14 +35,14 @@ export default function StatisticsPage() {
 
     return (
         <div className="stats-container">
-            <h1 className="stats-title">Ranking Graczy</h1>
+            <h1 className="statsname">Ranking Graczy</h1>
             <div className="search-box">
                 <input 
                     type="text" 
                     placeholder="Wyszukaj gracza..." 
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="stats-input"
+                    className="searchplayer"
                 />
             </div>
 

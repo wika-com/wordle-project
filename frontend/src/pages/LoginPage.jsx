@@ -45,13 +45,17 @@ export default function LoginPage() {
 
     return (
         <div className="App" id="block">
-            <h1>Guess<span id="it">it</span></h1>
-            <h3 id="text">Login</h3>
-            <div className="box">
-                <input placeholder="Username" onChange={e => setUsername(e.target.value)} value={username}/>
-                <input type="password" placeholder="Password" onChange={e => setPassword(e.target.value)} value={password}/>
-                <button id="button" onClick={handleRegister}>Register</button>
-                <button id="button" onClick={handleLogin}>Login</button>
+            <div className='logo'>
+                <h1>Guessit</h1>
+            </div>
+            <div id='stack'>
+                <h3 id="text">Login</h3>
+                <div className="box">
+                    <input placeholder="Username" onChange={e => setUsername(e.target.value)} value={username}/>
+                    <input type="password" placeholder="Password" onChange={e => setPassword(e.target.value)} value={password}/>
+                    <button id="button" onClick={handleRegister}>Register</button>
+                    <button id="button" onClick={handleLogin}>Login</button>
+                </div>
             </div>
             {message && <p className="message">{message}</p>}
         </div>
