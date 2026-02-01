@@ -12,6 +12,7 @@ body.dark .topbar{
 
 .topbar{
     /* position: fixed; */
+    border-radius: 20px 20px 20px 0;
     z-index: 1;
     background-color: #68C7C1;
     display: flex;
@@ -23,22 +24,26 @@ body.dark .topbar{
     font-family: "Atma", sans-serif;
     font-size: 4vh;
     font-weight: bold;
+    margin-left: 3vh;
+    color: coral;
 }
 .topbar-center{
     display: flex;
 }
 .topbar-right {
     display: flex;
+    border-radius: 20px;
     justify-content: flex-end;
     align-items: flex-end;
-    flex-direction: row;
+    flex-direction: column;
     color: #77A68A;
     background-color: #68C7C1;
     margin-right: 10px;
 }
 .user {
-    display: inline-block;
-    font-size: 2vh;
+    font-family: "Atma", sans-serif;
+    margin:auto;
+    font-size: 1rem;
     color: brown;
     background-color: #68C7C1;
 }
