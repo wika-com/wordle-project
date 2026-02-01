@@ -5,9 +5,7 @@ import socket from "../socket"; // Upewnij się, że masz ten plik konfiguracyjn
 
 export default function GamePage() {
     // Pobieramy dane zalogowanego użytkownika z kontekstu
-    const { userName, token, logout } = useContext(AppContext);
-    
-    // Stany gry z Twojego pierwotnego App.jsx
+    const data = useContext(AppContext);
     const [guess, setGuess] = useState('');
     const [board, setBoard] = useState([]); // Historia prób
     const [message, setMessage] = useState('');
@@ -15,13 +13,19 @@ export default function GamePage() {
 
     // Inicjalizacja połączenia socket
     useEffect(() => {
-        socket.emit('join_room', 'global_room');
-        
+        if (data.activeRoom && data.userName) {
+        socket.emit('join_room', { room: data.activeRoom, user: data.userName });
+        }
         // Czyścimy nasłuchiwanie przy wyjściu z komponentu
+        socket.on('receive_result', (payload) => {
+            if (payload.user !== data.userName) {
+                console.log(`Gracz ${payload.user} w pokoju ${data.activeRoom} wysłał słowo!`);
+            }
+        });
         return () => {
             socket.off('receive_result');
         };
-    }, []);
+    }, [data.activeRoom, data.userName]);
 
     // Funkcja nowej gry
     const startNewGame = () => {
@@ -31,12 +35,12 @@ export default function GamePage() {
         setMessage('');
     };
 
-    // Resetowanie statystyk (z Twojego App.jsx)
+    // Resetowanie statystyk
     const handleReset = async () => {
         if (!window.confirm("Czy na pewno chcesz zresetować swój wynik?")) return;
         try {
             const res = await axios.put("http://localhost:3000/api/user/reset", {}, {
-                headers: { Authorization: token }
+                headers: { Authorization: data.token }
             });
             alert(res.data.message);
         } catch (err) {
@@ -44,21 +48,21 @@ export default function GamePage() {
         }
     };
 
-    // Usuwanie konta (z Twojego App.jsx)
+    // Usuwanie konta
     const handleDeleteAccount = async () => {
         if (!window.confirm("Czy napewno chcesz usunąć konto?")) return;
         try {
             const res = await axios.delete("http://localhost:3000/api/user", {
-                headers: { Authorization: token }
+                headers: { Authorization: data.token }
             });
             alert(res.data.message);
-            logout(); // Wylogowanie po usunięciu konta
+            data.logout(); // Wylogowanie po usunięciu konta
         } catch (err) {
             alert("Błąd w usuwaniu konta...");
         }
     };
 
-    // Logika wysyłania słowa (z Twojego App.jsx)
+    // Logika wysyłania słowa
     const submitGuess = async () => {
         if (gameOver) return;
         if (guess.length !== 5) return alert("Słowo musi mieć 5 liter!");
@@ -66,22 +70,24 @@ export default function GamePage() {
         try {
             const res = await axios.post('http://localhost:3000/api/play', 
                 { guess: guess.toUpperCase() },
-                { headers: { Authorization: token } }
+                { headers: { Authorization: data.token } }
             );
 
             const newFeedback = res.data.feedback;
             const isCorrect = newFeedback.every(status => status === 'green');
             const newBoard = [...board, { word: guess.toUpperCase(), feedback: newFeedback }];
+            const currentRoom = data.activeRoom;
 
             setBoard(newBoard);
             setGuess('');
 
             // Socket.io - powiadomienie innych
             socket.emit('send_guess', {
-                room: 'global_room',
-                user: userName,
+                room: data.activeRoom,
+                user: data.userName,
                 guess: guess.toUpperCase(),
-                result: newFeedback
+                result: newFeedback,
+                isWin: isCorrect
             });
 
             if (isCorrect) {
@@ -98,7 +104,7 @@ export default function GamePage() {
 
     return (
         <div className="game-container">
-            <p className="welcome-msg">Witaj, <strong>{userName}</strong>!</p>
+            <p className="welcome-msg">Witaj, <strong>{data.userName}</strong>!</p>
             
             <div className="grid">
                 {board.map((attempt, i) => (

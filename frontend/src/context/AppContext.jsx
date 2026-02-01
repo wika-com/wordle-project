@@ -5,6 +5,7 @@ export const AppContext = createContext();
 export const AppProvider = ({ children }) => {
     const [userName, setUserName] = useState(localStorage.getItem('username') || null);
     const [token, setToken] = useState(localStorage.getItem('token') || null);
+    const [activeRoom, setActiveRoom] = useState('Globalny');
 
     const login = (user, tkn) => {
         setUserName(user);
@@ -21,7 +22,7 @@ export const AppProvider = ({ children }) => {
     };
 
     return (
-        <AppContext.Provider value={{ userName, token, login, logout }}>
+        <AppContext.Provider value={{ userName, token, login, logout, activeRoom, setActiveRoom }}>
             {children}
         </AppContext.Provider>
     );

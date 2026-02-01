@@ -1,17 +1,22 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../context/AppContext.jsx';
 import socket from '../socket';
 import '../Layout.css';
+import Chat from './Chat.jsx';
 
 export default function Sidebar() {
-  const { userName } = useContext(AppContext);
+  const data = useContext(AppContext);
   const rooms = ['Globalny', 'Pokój 1', 'Pokój 2', 'Eksperci'];
-  const [activeRoom, setActiveRoom] = useState('Globalny');
+
+  useEffect(() => {
+        if (data.userName) {
+            socket.emit('join_room', { room: data.activeRoom, user: data.userName });
+        }
+    }, [data.userName, data.activeRoom]);
 
   const changeRoom = (roomName) => {
-    setActiveRoom(roomName);
-    socket.emit('join_room', { room: roomName, user: userName });
-    // Możesz też dodać powiadomienie lokalne
+    data.setActiveRoom(roomName);
+    socket.emit('join_room', { room: roomName, user: data.userName });
     console.log("Zmieniono pokój na:", roomName);
   };
 
@@ -22,7 +27,7 @@ export default function Sidebar() {
         {rooms.map((room) => (
           <li 
             key={room} 
-            className={activeRoom === room ? 'active' : ''} 
+            className={data.activeRoom === room ? 'active' : ''} 
             onClick={() => changeRoom(room)}
           >
             {room}
@@ -30,8 +35,9 @@ export default function Sidebar() {
         ))}
       </ul>
       <div className="sidebar-info">
-        <p>Grasz w: <strong>{activeRoom}</strong></p>
+        <p>Grasz w: <strong>{data.activeRoom}</strong></p>
       </div>
+      < Chat />
     </aside>
   );
 }
