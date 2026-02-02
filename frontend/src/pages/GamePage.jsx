@@ -13,7 +13,7 @@ export default function GamePage() {
     const [board, setBoard] = useState([]); // Historia prób
     const [message, setMessage] = useState('');
     const [gameOver, setGameOver] = useState(false);
-    const [gameStarted, setGameStarted] = useState(false);
+    // const [gameStarted, setGameStarted] = useState(false);
     const didInit = useRef(false);
 
     // Inicjalizacja połączenia socket
@@ -25,6 +25,9 @@ export default function GamePage() {
         socket.on('receive_result', (payload) => {
             if (payload.user !== data.userName) {
                 console.log(`Gracz ${payload.user} w pokoju ${data.activeRoom} wysłał słowo!`);
+                if (payload.isWin) {
+                    toast.info(`${payload.user} odgadł słowo!`);
+                }
             }
         });
         return () => {
@@ -32,20 +35,33 @@ export default function GamePage() {
         };
     }, [data.activeRoom, data.userName]);
 
-    const startNewGame = async () => {
-        console.log("START NEW GAME, token =", data.token);
-        try {
-            await axios.post('http://localhost:3000/api/new-game', {}, {
-            headers: { Authorization: data.token }
-            });
-            setBoard([]);
-            setGuess('');
-            setGameOver(false);
-            setMessage('');
-        } catch (err) {
-            alert("Nie udało się zacząć nowej gry :(")
-        }  
+    useEffect(() => {
+        setBoard([]);
+        setGuess('');
+        setGameOver(false);
+        setMessage(`Witaj w pokoju: ${data.activeRoom}!`);
+    }, [data.activeRoom]);
+
+    // const startNewGame = async () => {
+    //     try {
+    //         await axios.post('http://localhost:3000/api/new-game', {}, {
+    //         headers: { Authorization: data.token }
+    //         });
+    //         setBoard([]);
+    //         setGuess('');
+    //         setGameOver(false);
+    //         setMessage('');
+    //     } catch (err) {
+    //         alert("Nie udało się zacząć nowej gry :(")
+    //     }  
+    // };
+    const startNewGame = () => {
+        setBoard([]);
+        setGuess('');
+        setGameOver(false);
+        setMessage('Nowa gra rozpoczęta!');
     };
+
     useEffect(() => {
         if(!data.token) return;
         if (didInit.current) return;
@@ -67,9 +83,9 @@ export default function GamePage() {
             const res = await axios.put("http://localhost:3000/api/user/reset", {}, {
                 headers: { Authorization: data.token }
             });
-            alert(res.data.message);
+            toast.success(res.data.message);
         } catch (err) {
-            alert("Błąd w resetowaniu...");
+            toast.error("Błąd w resetowaniu...");
         }
     };
 
@@ -80,10 +96,10 @@ export default function GamePage() {
             const res = await axios.delete("http://localhost:3000/api/user", {
                 headers: { Authorization: data.token }
             });
-            alert(res.data.message);
+            toast.success(res.data.message);
             data.logout();
         } catch (err) {
-            alert("Błąd w usuwaniu konta...");
+            toast.error("Błąd w usuwaniu konta...");
         }
     };
 

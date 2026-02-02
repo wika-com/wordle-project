@@ -38,7 +38,7 @@ body.dark .topbar{
   justify-content: center;
   align-items: center;
   font-family: "Atma", sans-serif;
-  cursor: pointer;
+  cursor: grab;
 }
 .logo2 {
     font-family: "Atma", sans-serif;
@@ -70,6 +70,7 @@ body.dark .topbar{
 .logout{
   display: inline-block;
   margin-left: 5px;
+  margin-top: 3px;
 }
 
 @media (max-width: 600px) {

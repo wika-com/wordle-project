@@ -8,13 +8,13 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const app = express();
-const SECRET_KEY = "TWOJ_TAJNY_KLUCZ_123";
+const SECRET_KEY = "MOJ_TAJNY_KLUCZ_123";
 app.use(express.json());
 app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 const db = new sqlite3.Database('./wordle.db');
-const userSessions = {};
+// const userSessions = {};
 
 function verifyToken(req, res, next) {
     const token = req.headers['authorization'];
@@ -36,27 +36,25 @@ db.serialize(() => {
   )`);
 });
 
-// Zamiast userSessions, użyj roomSessions
 const roomSessions = {};
-
 // Funkcja generująca słowo dla konkretnego pokoju
 async function generateWordForRoom(roomName) {
     const url = `https://random-word-api.herokuapp.com/word?length=5`;
     try {
-        const response = await fetch(url);
-        if (response.ok) {
-            const words = await response.json();
-            const word = words[0].toUpperCase();
-            roomSessions[roomName] = {
-                word: word,
-                lastUpdated: new Date()
-            };
-            console.log(`Pokój [${roomName}] otrzymał słowo: ${word}`);
-            return word;
-        }
+      const response = await fetch(url);
+      if (response.ok) {
+        const words = await response.json();
+        const word = words[0].toUpperCase();
+        roomSessions[roomName] = {
+          word: word,
+          lastUpdated: new Date()
+        };
+        console.log(`Pokój [${roomName}] otrzymał słowo: ${word}`);
+        return word;
+      }
     } catch (e) {
-        roomSessions[roomName] = { word: "KOTKI" };
-        return "KOTKI";
+      roomSessions[roomName] = { word: "KOTKI", lastUpdated: new Date() };
+      return "KOTKI";
     }
 }
 const rooms = ['Globalny', 'Pokój 1', 'Pokój 2', 'Eksperci'];
@@ -82,14 +80,31 @@ async function generateNewWord(userId) {
       return "KOTKI";
   }
 }
+// app.post('/api/new-word/:room', verifyToken, async (req, res) => {
+//     const room = req.params.room;
+//     if (!rooms.includes(room)) {
+//         return res.status(400).json({ error: "Nieprawidłowy pokój" });
+//     }
+//     try {
+//         const word = await generateWordForRoom(room);
+//         res.json({ message: `Nowe słowo dla pokoju ${room}!`, status: "ready" });
+//     } catch (err) {
+//         console.error("Błąd generowania słowa:", err);
+//         res.status(500).json({ error: "Błąd serwera" });
+//     }
+// });
+
 app.post('/api/new-game', verifyToken, async (req, res) => {
+  const room = req.params.room;
+  if (!rooms.includes(room)) {
+      return res.status(400).json({ error: "Nieprawidłowy pokój" });
+  }
   try{
-    console.log("Generowanie nowej gry dla ID:", req.userId);
-    const word = await generateNewWord(req.userId);
+    const word = await generateNewWordForRoom(room);
     res.json({ message: "Nowe słowo wylosowane!", status:"ready" });
   } catch (err) {
-    console.error("Błąd generowania słowa:", error);
-    res.status(500).json({ error: "Błąd serwera przy losowaniu słowa" });
+    console.error("Błąd generowania słowa:", err);
+    res.status(500).json({ error: "Błąd serwera" });
   }  
 });
 
@@ -120,32 +135,44 @@ app.post('/api/login', (req, res) => {
 });
 
 // Resetowanie statystyk (update)
-app.put('/api/user/reset', (req, res) => {
-    const token = req.headers['authorization'];
-    if (!token) return res.status(401).json({ error: "Brak tokena" });
+// app.put('/api/user/reset', verifyToken, (req, res) => {
+//   const token = req.headers['authorization'];
+//   if (!token) return res.status(401).json({ error: "Brak tokena" });
+//   jwt.verify(token, SECRET_KEY, (err, decoded) => {
+//     if (err) return res.status(401).json({ error: "Sesja wygasła" });
+//     db.run("UPDATE users SET score = 0 WHERE id = ?", [decoded.id], function(err) {
+//         if (err) return res.status(500).json({ error: "Błąd bazy danych" });
+//         res.json({ message: "Statystyki zostały zresetowane!" });
+//     });
+//   });
+// });
 
-    jwt.verify(token, SECRET_KEY, (err, decoded) => {
-        if (err) return res.status(401).json({ error: "Sesja wygasła" });
-
-        db.run("UPDATE users SET score = 0 WHERE id = ?", [decoded.id], function(err) {
-            if (err) return res.status(500).json({ error: "Błąd bazy danych" });
-            res.json({ message: "Statystyki zostały zresetowane!" });
-        });
+app.put('/api/user/reset', verifyToken, (req, res) => {
+    db.run("UPDATE users SET score = 0 WHERE id = ?", [req.userId], function(err) {
+        if (err) return res.status(500).json({ error: "Błąd bazy danych" });
+        res.json({ message: "Statystyki zostały zresetowane!" });
     });
 });
 
 // Usuwanie konta
-app.delete('/api/user', (req, res) => {
-    const token = req.headers['authorization'];
-    if (!token) return res.status(401).json({ error: "Brak tokena" });
+// app.delete('/api/user', (req, res) => {
+//     const token = req.headers['authorization'];
+//     if (!token) return res.status(401).json({ error: "Brak tokena" });
 
-    jwt.verify(token, SECRET_KEY, (err, decoded) => {
-        if (err) return res.status(401).json({ error: "Sesja wygasła" });
+//     jwt.verify(token, SECRET_KEY, (err, decoded) => {
+//         if (err) return res.status(401).json({ error: "Sesja wygasła" });
 
-        db.run("DELETE FROM users WHERE id = ?", [decoded.id], function(err) {
-            if (err) return res.status(500).json({ error: "Błąd bazy danych" });
-            res.json({ message: "Twoje konto zostało trwale usunięte." });
-        });
+//         db.run("DELETE FROM users WHERE id = ?", [decoded.id], function(err) {
+//             if (err) return res.status(500).json({ error: "Błąd bazy danych" });
+//             res.json({ message: "Twoje konto zostało trwale usunięte." });
+//         });
+//     });
+// });
+
+app.delete('/api/user', verifyToken, (req, res) => {
+    db.run("DELETE FROM users WHERE id = ?", [req.userId], function(err) {
+        if (err) return res.status(500).json({ error: "Błąd bazy danych" });
+        res.json({ message: "Twoje konto zostało trwale usunięte." });
     });
 });
 
@@ -158,14 +185,14 @@ app.post('/api/play', verifyToken, (req, res) => {
   const upperGuess = guess.toUpperCase();
 
   if (!roomSessions[room]) {
-        return res.status(400).json({ error: "Nieprawidłowy pokój" });
+    return res.status(400).json({ error: "Nieprawidłowy pokój" });
   }
 
   // if (!userSessions[userId]) {
   //   return res.status(400).json({ error: "Najpierw zacznij nową grę!" });
   // }
   if (!guess || guess.length !== 5) {
-        return res.status(400).json({ error: "Słowo musi mieć 5 liter" });
+    return res.status(400).json({ error: "Słowo musi mieć 5 liter" });
   }
 
   // const userWord = userSessions[req.userId].word;
@@ -189,7 +216,7 @@ app.get('/api/search/:pattern', (req, res) => {
 });
 
 // MQTT
-const mqttClient = mqtt.connect('mqtt://broker.hivemq.com'); // Publiczny broker do testów
+const mqttClient = mqtt.connect('mqtt://broker.hivemq.com');
 mqttClient.on('connect', () => {
   console.log('Połączono z MQTT');
   mqttClient.subscribe('wordle/game/win');
@@ -198,13 +225,9 @@ mqttClient.on('connect', () => {
 // WEBSOCKET
 io.on('connection', (socket) => {
   console.log('Nowy gracz połączony:', socket.id);
-
   socket.on('join_room', (data) => {
     const room = typeof data === 'string' ? data : data.room;
     const user = data.user || "Anonim";
-    // socket.rooms.forEach((room) => {
-    //   if (room !== socket.id) socket.leave(room);
-    // });
 
     for (const r of socket.rooms) {
       if (r !== socket.id) socket.leave(r);
@@ -220,7 +243,7 @@ io.on('connection', (socket) => {
     const { room, user, message } = data;
     const timestamp = new Date().toLocaleTimeString();
 
-    // wiadomość do wszystkich w pokoju, włącznie z nadawcą
+    // wiadomość do wszystkich w pokoju
     io.to(room).emit('receive_message', {
       room,
       user,
@@ -228,18 +251,19 @@ io.on('connection', (socket) => {
       timestamp
     });
     // Publikacja na MQTT dla logów
-      mqttClient.publish(`wordle/chat/${room}`, `${user}: ${message}`);
+    mqttClient.publish(`wordle/chat/${room}`, `${user}: ${message}`);
   });
 
   //Logika sprawdzania słowa 
   socket.on('send_guess', (data) => {
-    const userId = data.userId;
-    const session = userSessions[userId];
+    const room = data.room;
+    const session = roomSessions[room];
     if (!session) return;
     const isWin = data.guess.toUpperCase() === session.word;
     if(isWin) {
-      mqttClient.publish('wordle/game/win', `Gracz ${data.user} odgadł hasło!`);
+      mqttClient.publish('wordle/game/win', `Gracz ${data.user} odgadł hasło w pokoju ${room}!`);
       db.run("UPDATE users SET score = score + 1 WHERE username = ?", [data.user]);
+      generateWordForRoom(room);
     }
     io.to(data.room).emit('receive_result', { user: data.user, result: data.result, isWin: isWin });
   });
