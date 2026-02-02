@@ -89,7 +89,7 @@ export default function Chat() {
 
     useEffect(() => {
         const handleMessage = (msg) => {
-            console.log("📩 MSG:", msg);
+            console.log("WIadomość:", msg);
             setMessages((prev) => [...prev, msg]);
         };
         socket.on('receive_message', handleMessage);
@@ -103,7 +103,7 @@ export default function Chat() {
             const msgPayload = {
                 room: data.activeRoom,
                 user: data.userName,
-                text: text,
+                message: text,
                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             };
             // Wysyłamy do serwera
@@ -113,15 +113,15 @@ export default function Chat() {
     };
 
     return (
-        <div className="sidebar-chat">
+        <div className="chat">
             <h4>Czat: {data.activeRoom}</h4>
             <div className="chat-window">
                 {messages.map((m, index) => (
                     <div key={index} className={m.user === data.userName ? "my-msg" : "other-msg"}>
                         <div className="msg-cloud">
                             <span className="msg-author">{m.user === data.userName ? "Ja" : m.user}</span>
-                            <p className="msg-text">{m.text}</p>
-                            <span className="msg-time">{m.time}</span>
+                            <p className="msg-text">{m.message}</p>
+                            <span className="msg-time">{m.timestamp}</span>
                         </div>
                     </div>
                 ))}
