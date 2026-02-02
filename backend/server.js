@@ -36,20 +36,31 @@ db.serialize(() => {
   )`);
 });
 
-// async function updateTargetWord() {
-//     const url = `https://random-word-api.herokuapp.com/word?length=5`;
-//     try {
-//         const response = await fetch(url);
-//         if (response.ok) {
-//             const words = await response.json();
-//             targetWord = words[0].toUpperCase();
-//             console.log(`Nowe słowo dnia: ${targetWord}`);
-//         }
-//     } catch (e) {
-//         console.error("Nie udało się pobrać słowa, zostaję przy domyślnym.");
-//     }
-// }
-// updateTargetWord();
+// Zamiast userSessions, użyj roomSessions
+const roomSessions = {};
+
+// Funkcja generująca słowo dla konkretnego pokoju
+async function generateWordForRoom(roomName) {
+    const url = `https://random-word-api.herokuapp.com/word?length=5`;
+    try {
+        const response = await fetch(url);
+        if (response.ok) {
+            const words = await response.json();
+            const word = words[0].toUpperCase();
+            roomSessions[roomName] = {
+                word: word,
+                lastUpdated: new Date()
+            };
+            console.log(`Pokój [${roomName}] otrzymał słowo: ${word}`);
+            return word;
+        }
+    } catch (e) {
+        roomSessions[roomName] = { word: "KOTKI" };
+        return "KOTKI";
+    }
+}
+const rooms = ['Globalny', 'Pokój 1', 'Pokój 2', 'Eksperci'];
+rooms.forEach(room => generateWordForRoom(room));
 
 async function generateNewWord(userId) {
   const url = `https://random-word-api.herokuapp.com/word?length=5`;
@@ -59,7 +70,6 @@ async function generateNewWord(userId) {
         const words = await response.json();
         const word = words[0].toUpperCase();
         
-        // Zapisujemy słowo tylko dla tego konkretnego użytkownika
         userSessions[userId] = {
             word: word,
             startTime: new Date()
@@ -68,7 +78,6 @@ async function generateNewWord(userId) {
         return word;
     }
   } catch (e) {
-      // Fallback w razie błędu API
       userSessions[userId] = { word: "KOTKI" };
       return "KOTKI";
   }
@@ -83,11 +92,6 @@ app.post('/api/new-game', verifyToken, async (req, res) => {
     res.status(500).json({ error: "Błąd serwera przy losowaniu słowa" });
   }  
 });
-
-// app.post('/api/new-game', verifyToken, async (req, res) => {
-//     const word = await generateNewWord(req.userId);
-//     res.json({ message: "Nowe słowo wylosowane!", status: "ready" });
-// });
 
 app.post('/api/register', async (req, res) => {
   try {
@@ -114,18 +118,6 @@ app.post('/api/login', (req, res) => {
     }
   });
 });
-
-// app.post('/api/new-game', verifyToken, (req, res) => {
-//     const userId = req.userId; // ID z tokena
-//     const words = ["KOTKI", "RYBKA", "DOMKI", "KWIAT"];
-//     const newWord = words[Math.floor(Math.random() * words.length)];
-    
-//     userSessions[userId] = {
-//         word: newWord,
-//         attempts: 0
-//     };
-//     res.json({ message: "Nowe słowo wylosowane!" });
-// });
 
 // Resetowanie statystyk (update)
 app.put('/api/user/reset', (req, res) => {
@@ -159,20 +151,27 @@ app.delete('/api/user', (req, res) => {
 
 //logika gry
 app.post('/api/play', verifyToken, (req, res) => {
-  const { guess } = req.body;
+  const { guess, room } = req.body;
   const userId = req.userId;
+  const targetWord = roomSessions[room].word;
   const feedback = [];
-  if (!userSessions[userId]) {
-    return res.status(400).json({ error: "Najpierw zacznij nową grę!" });
+  const upperGuess = guess.toUpperCase();
+
+  if (!roomSessions[room]) {
+        return res.status(400).json({ error: "Nieprawidłowy pokój" });
   }
+
+  // if (!userSessions[userId]) {
+  //   return res.status(400).json({ error: "Najpierw zacznij nową grę!" });
+  // }
   if (!guess || guess.length !== 5) {
         return res.status(400).json({ error: "Słowo musi mieć 5 liter" });
   }
-  const upperGuess = guess.toUpperCase();
-  const userWord = userSessions[req.userId].word;
+
+  // const userWord = userSessions[req.userId].word;
   for (let i = 0; i < 5; i++) {
-    if (upperGuess[i] === userWord[i]) feedback.push('green');
-    else if (userWord.includes(upperGuess[i])) feedback.push('yellow');
+    if (upperGuess[i] === targetWord[i]) feedback.push('green');
+    else if (targetWord.includes(upperGuess[i])) feedback.push('yellow');
     else feedback.push('grey');
   }
   res.json({ feedback });
@@ -196,7 +195,6 @@ mqttClient.on('connect', () => {
   mqttClient.subscribe('wordle/game/win');
 });
 
-const rooms = ['Globalny', 'Pokój 1', 'Pokój 2', 'Eksperci'];
 // WEBSOCKET
 io.on('connection', (socket) => {
   console.log('Nowy gracz połączony:', socket.id);
@@ -213,11 +211,9 @@ io.on('connection', (socket) => {
     }
     socket.join(room);
     console.log(`Gracz dołączył do pokoju: ${room}`);
-
     socket.to(room).emit('notification', {
       message: `Użytkownik ${user} dołączył do gry!`
     });
-    
   });
 
   socket.on('send_message', (data) => {

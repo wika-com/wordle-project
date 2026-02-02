@@ -38,7 +38,7 @@ body.dark .topbar{
   justify-content: center;
   align-items: center;
   font-family: "Atma", sans-serif;
-  /* display: flex; */
+  cursor: pointer;
 }
 .logo2 {
     font-family: "Atma", sans-serif;

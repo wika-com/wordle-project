@@ -2,7 +2,7 @@ import React, { Suspense, useContext } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AppContext } from './context/AppContext.jsx';
 import TopBar from './components/TopBar.jsx';
-// import "./style/Layout.css";
+//  import "./Layout.css";
 import LoginPage from './pages/LoginPage.jsx';
 import GamePage from './pages/GamePage.jsx';
 import StatisticsPage from './pages/StatisticsPage.jsx';

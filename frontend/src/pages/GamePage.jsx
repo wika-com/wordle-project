@@ -5,6 +5,7 @@ import socket from "../socket";
 // import '../style/GamePage.css';
 import "./GamePage.css";
 import Sidebar from '../components/Sidebar.jsx';
+import { toast } from 'react-toastify';
 
 export default function GamePage() {
     const data = useContext(AppContext);
@@ -14,9 +15,6 @@ export default function GamePage() {
     const [gameOver, setGameOver] = useState(false);
     const [gameStarted, setGameStarted] = useState(false);
     const didInit = useRef(false);
-
-
-
 
     // Inicjalizacja połączenia socket
     useEffect(() => {
@@ -96,7 +94,9 @@ export default function GamePage() {
         
         try {
             const res = await axios.post('http://localhost:3000/api/play', 
-                { guess: guess.toUpperCase() },
+                { guess: guess.toUpperCase(),
+                    room: data.activeRoom
+                },
                 { headers: { Authorization: data.token } }
             );
 

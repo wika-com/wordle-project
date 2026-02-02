@@ -1,0 +1,133 @@
+.chat {
+    display: flex;
+    flex-direction: column;
+    min-height: 3vh;
+    background: #f8f9fa;
+    border-radius: 12px;
+    margin-top: 20px;
+    color: #333;
+    overflow: hidden;
+}
+
+.chat h4 {
+    background: #ABCF82;
+    color: white;
+    margin: 0;
+    padding: 10px;
+    text-align: center;
+    font-size: 0.9em;
+}
+
+.chat-window {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background-color: white;
+}
+
+/* Styl chmurek wiadomości */
+.my-msg, .other-msg {
+    display: flex;
+    width: 100%;
+}
+
+.my-msg {
+    justify-content: flex-end;
+}
+
+.other-msg {
+    justify-content: flex-start;
+}
+
+.cloud {
+    max-width: 80%;
+    padding: 8px 12px;
+    border-radius: 15px;
+    position: relative;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.my-msg .cloud {
+    background-color: #ABCF82;
+    color: white;
+    border-bottom-right-radius: 2px;
+}
+
+.other-msg .cloud {
+    background-color: #e9ecef;
+    color: #333;
+    border-bottom-left-radius: 2px;
+}
+
+.author {
+    display: block;
+    font-size: 0.7em;
+    font-weight: bold;
+    margin-bottom: 3px;
+}
+
+.messtext {
+    margin: 0;
+    font-size: 0.9em;
+}
+
+.messtime {
+    display: block;
+    font-size: 0.6em;
+    text-align: right;
+    margin-top: 4px;
+}
+
+/* Obszar wpisywania */
+.chat-input-area {
+    display: flex;
+    /* padding: 5px; */
+    background: #fff;
+}
+
+.chat-input-area input {
+    flex: 1;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    padding: 8px;
+    font-size: 0.85em;
+}
+
+.chat-input-area input:focus {
+    border-color: #ABCF82;
+}
+
+.chat-input-area button {
+    background-color: #ABCF82;
+    color: white;
+    border-radius: 50%;
+    border: #8fb866;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chat-input-area button:hover {
+    background-color: #8fb866;
+}
+
+/* Scrollbar styling */
+.chat-window::-webkit-scrollbar {
+    width: 5px;
+}
+
+.chat-window::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.chat-window::-webkit-scrollbar-thumb {
+    background: #ABCF82;
+    border-radius: 10px;
+}

@@ -2,7 +2,7 @@
     max-width: 600px;
     margin: 40px auto;
     padding: 20px;
-    background-color: #7ccdc8;
+    background-color: #B6ACE4;
     color: white;
 }
 
@@ -10,9 +10,9 @@
     text-align: center;
     font-size: 2rem;
     margin-bottom: 30px;
+    color: #ABCF82;
 }
 
-/* Wyszukiwarka */
 .search-box {
     margin-bottom: 20px;
 }
@@ -22,19 +22,20 @@
     padding: 12px;
     background-color: #fff8eb;
     border: 1px solid #0c0a05;
-    color: white;
+    color: black;
     border-radius: 4px;
     font-size: 1rem;
+    font-family:monospace, sans-serif;
 }
 
 .stats-input:focus {
     outline: none;
-    border-color: #e2ce6a;
+    border-color: #FFC1C1;
 }
 
 /* Tabela */
 .table-wrapper {
-    background-color: #FACA78;
+    background-color: #FFC1C1;
     border-radius: 8px;
     overflow: hidden;
     border: 1px solid #3a3a3c;
@@ -46,7 +47,7 @@
 }
 
 .stats-table th {
-    background-color: #b99556;
+    background-color: #f7aaaa;
     padding: 15px;
     text-align: left;
     font-weight: bold;
@@ -65,8 +66,8 @@
 
 /* Wyróżnienie aktualnego użytkownika */
 .current-user-row {
-    background-color: rgba(83, 141, 78, 0.2) !important;
-    color: #a58b5c;
+    background-color: #ca9797;
+    color: white;
     font-weight: bold;
 }
 

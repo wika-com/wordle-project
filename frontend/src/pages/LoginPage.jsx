@@ -3,46 +3,74 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../context/AppContext.jsx';
 import "./LoginPage.css"
+import { toast } from 'react-toastify';
 
 export default function LoginPage() {
-    // Stany przeniesione bezpośrednio z Twojego App.jsx
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
-    
-    // Pobieramy funkcję login z kontekstu
     const data = useContext(AppContext);
     const nav = useNavigate();
 
-    // Logika handleRegister z Twojego App.jsx
     const handleRegister = async () => {
         try {
-            await axios.post('http://localhost:3000/api/register', { username, password });
-            alert("Zarejestrowano!");
-        } catch (err) {
-            alert(err.response?.data?.error || "Błąd rejestracji");
-        }
-    };
-
-    // Logika handleLogin z Twojego App.jsx zintegrowana z nawigacją
-    const handleLogin = async () => {
-        try {
-            const res = await axios.post('http://localhost:3000/api/login', { username, password });
-            
-            // Zapisujemy dane przez AppContext (to ustawi token i localStorage)
-            if (data.login) {
-                data.login(res.data.username, res.data.token);
+            const nameClean = (username || "").trim();
+            if (!nameClean) {
+                toast.error("Niepoprawna nazwa użytkownika");
+                return;
             }
-
-            setMessage("Zalogowano pomyślnie!");
-            
-            // Przekierowanie do gry po udanym logowaniu
-            nav("/game");
+            if (nameClean.length<=3) {
+                toast.error("Za krótki login");
+                return;
+            }
+            if (!/^[A-Za-z0-9ąćęłńóśżź]+$/.test(nameClean)) {
+                toast.error("Login zawiera niedozwolone znaki: , ! @ % # * + $ ?");
+                return;
+            }
+            await axios.post('http://localhost:3000/api/register', { username:nameClean, password });
+            toast.success("Zarejestrowano!");
         } catch (err) {
-            alert("Błąd logowania");
+            toast.error("Błąd rejestracji");
         }
     };
 
+    // const handleLogin = async () => {
+    //     setMessage("");
+    //     try {
+    //         const res = await axios.post('http://localhost:3000/api/login', { username, password });
+    //         // dane przez AppContext (to ustawi token i localStorage)
+    //         if (data.login) {
+    //             data.login(res.data.username, res.data.token);
+    //         }
+    //         setMessage("Zalogowano pomyślnie!");
+    //         toast.success("Zalogowano");
+    //         nav("/game");
+    //     } catch (err) {
+    //         toast.error("Niepoprawny login..");
+    //         console.error("Błąd logowania:", err);
+    //     }
+    // };
+
+    const handleLogin = async () => {
+    setMessage("");
+    try {
+        const res = await axios.post('http://localhost:3000/api/login', { 
+            username, 
+            password 
+        });
+        
+        data.login(res.data.username, res.data.token, res.data.userId);
+        setMessage("Zalogowano pomyślnie!");
+        toast.success("Zalogowano!");
+        setTimeout(() => {
+            nav("/game");
+        }, 100);
+        
+    } catch (err) {
+        toast.error("Niepoprawny login lub hasło");
+        console.error("Błąd logowania:", err.response?.data || err.message);
+        }
+    };
     return (
         <div className="App" id="block">
             <div className='logo'>
@@ -53,7 +81,7 @@ export default function LoginPage() {
                 <div className="box">
                     <input placeholder="Username" onChange={e => setUsername(e.target.value)} value={username}/>
                     <input type="password" placeholder="Password" onChange={e => setPassword(e.target.value)} value={password}/>
-                    <button id="button" onClick={handleRegister}>Register</button>
+                    <button id="button" value="name" onClick={handleRegister}>Register</button>
                     <button id="button" onClick={handleLogin}>Login</button>
                 </div>
             </div>

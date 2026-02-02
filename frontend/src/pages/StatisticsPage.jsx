@@ -25,11 +25,9 @@ export default function StatisticsPage() {
                 setLoading(false);
             }
         };
-
         const timer = setTimeout(() => {
             fetchStats();
         }, 300);
-
         return () => clearTimeout(timer);
     }, [searchTerm]);
 
