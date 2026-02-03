@@ -26,8 +26,8 @@ export default function TopBar() {
                     </button>
                     <button 
                         id='topbuttom'
-                        className={`link ${location.pathname === '/settings' ? 'active' : ''}`}
-                        onClick={() => nav('/settings')}>
+                        className={`link ${location.pathname === '/stats' ? 'active' : ''}`}
+                        onClick={() => nav('/stats')}>
                         Ranking
                     </button>
                 </nav>

@@ -31,7 +31,6 @@ export default function Chat() {
                 room: data.activeRoom,
                 user: data.userName,
                 message: text,
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             };
             // wysyłamy do serwera
             socket.emit('send_message', msgPayload);

@@ -26,7 +26,7 @@ export default function Layout() {
                         <Route path="/game" element={
                             <ProtectedRoute><GamePage /></ProtectedRoute>
                         } />
-                        <Route path="/settings" element={
+                        <Route path="/stats" element={
                             <ProtectedRoute><StatisticsPage /></ProtectedRoute>
                         } />
                         <Route path="*" element={<Navigate to="/login" replace />} />
