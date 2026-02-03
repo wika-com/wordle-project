@@ -32,9 +32,9 @@ export default function StatisticsPage() {
     }, [searchTerm]);
 
     return (
-        <div className="stats-container">
-            <h1 className="statsname">Ranking Graczy</h1>
-            <div className="search-box">
+        <div className="statsContainer">
+            <h1 className="statNname">Ranking Graczy</h1>
+            <div className="searchBox">
                 <input 
                     type="text" 
                     placeholder="Wyszukaj gracza..." 
@@ -43,12 +43,11 @@ export default function StatisticsPage() {
                     className="searchplayer"
                 />
             </div>
-
             {loading ? (
                 <div className="loader">Ładowanie danych...</div>
             ) : (
-                <div className="table-wrapper">
-                    <table className="stats-table">
+                <div className="table">
+                    <table className="statsTable">
                         <thead>
                             <tr>
                                 <th>Poz.</th>
@@ -58,7 +57,7 @@ export default function StatisticsPage() {
                         </thead>
                         <tbody>
                             {stats.map((user, index) => (
-                                <tr key={user.id} className={user.username === data.userName ? "current-user-row" : ""}>
+                                <tr key={user.id} className={user.username === data.userName ? "currentUser" : ""}>
                                     <td>{index + 1}.</td>
                                     <td>{user.username} {user.username === data.userName && "(Ty)"}</td>
                                     <td style={{ textAlign: 'right' }}>{user.score}</td>

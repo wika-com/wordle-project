@@ -42,9 +42,9 @@ export default function Chat() {
     return (
         <div className="chat">
             <h4>Czat: {data.activeRoom}</h4>
-            <div className="chat-window">
+            <div className="window">
                 {messages.map((m, index) => (
-                    <div key={index} className={m.user === data.userName ? "my-msg" : "other-msg"}>
+                    <div key={index} className={m.user === data.userName ? "my" : "them"}>
                         <div className="cloud">
                             <span className="author">{m.user === data.userName ? "Ja" : m.user}</span>
                             <p className="messtext">{m.message}</p>
@@ -54,7 +54,7 @@ export default function Chat() {
                 ))}
                 <div ref={messagesEndRef} />
             </div>
-            <div className="chat-input-area">
+            <div className="inputArea">
                 <input 
                     value={text} 
                     onChange={(e) => setText(e.target.value)}

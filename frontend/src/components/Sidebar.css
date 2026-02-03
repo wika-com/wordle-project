@@ -22,11 +22,3 @@
   cursor: pointer;
   transition: 0.3s;
 }
-
-.room-list li:hover {
-  background-color: #3a3a3c;
-}
-
-.room-list li.active {
-  background-color: #3a3a3c;
-}

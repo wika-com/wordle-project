@@ -17,7 +17,7 @@ export default function TopBar() {
                 <div className="topbar-left">
                     <h1 className="logo2">Guessit</h1>
                 </div>
-                <nav className="topbar-center">
+                <nav className="center">
                     <button 
                         id='topbuttom'
                         className={`link ${location.pathname === '/game' ? 'active' : ''}`}
@@ -32,7 +32,7 @@ export default function TopBar() {
                     </button>
                 </nav>
             </div>
-            <div className="topbar-right">
+            <div className="right">
                 <span className="user">Gracz: <strong>{data.userName}</strong></span>
                 <button className="logout" onClick={() => {
                     data.logout();

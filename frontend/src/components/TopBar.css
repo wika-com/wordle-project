@@ -46,10 +46,10 @@ body.dark .topbar{
     margin-left: 3vh;
     color: white;
 }
-.topbar-center{
+.center{
     display: flex;
 }
-.topbar-right {
+.right {
     display: flex;
     border-radius: 20px;
     justify-content: flex-end;
@@ -70,13 +70,4 @@ body.dark .topbar{
   display: inline-block;
   margin-left: 5px;
   margin-top: 3px;
-}
-
-@media (max-width: 600px) {
-  #status {
-    font-size: smaller;
-  }
-  #name {
-    font-size: 1.2rem;
-  }
 }

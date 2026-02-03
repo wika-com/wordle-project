@@ -140,7 +140,7 @@ export default function GamePage() {
     return (
         <div className='maingame'>
             <Sidebar />
-            <div className="game-container">
+            <div className="gameContainer">
                 <p className="welcome">Witaj, <strong>{data.userName}</strong>!</p>
                 <div className="grid">
                     {board.map((attempt, i) => (
@@ -165,12 +165,12 @@ export default function GamePage() {
                         placeholder="WPISZ SŁOWO"
                     />
                     <button className="submit" onClick={submitGuess} disabled={gameOver}>Sprawdź</button>
-                    {gameOver && <button className="btn-newgame" onClick={startNewGame}>Nowa Gra</button>}
+                    {gameOver && <button className="newgame" onClick={startNewGame}>Nowa Gra</button>}
                 </div>
 
                 {message && <p className="gamemessage">{message}</p>}
 
-                <div className="account-settings">
+                <div className="settings">
                     <button onClick={handleReset}>Resetuj statystyki</button>
                     <button onClick={handleDeleteAccount}>Usuń konto</button>
                 </div>
