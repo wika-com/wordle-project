@@ -5,7 +5,6 @@ h1 {
 .main {
   display: flex;
   flex-direction: column;
-  /* width: 100vh; */
   min-height: 100vh;
   margin: 0;
 }
@@ -27,7 +26,6 @@ h1 {
   display: flex;
   background-color: #F7DCAD;
   justify-content: center;
-  /* flex-direction: column; */
   align-items: flex-start;
   padding: 20px;
   overflow-y: auto;
@@ -37,7 +35,6 @@ h1 {
   display: flex;
   flex-direction: row;
   flex: 1;
-  /* align-items: stretch; */
   width: 100%;
 }
 .card1 {
@@ -51,10 +48,6 @@ body {
   margin: 0;
   display: block;
   padding: 0;
-  /* place-items: center;
-  justify-content: center;
-  width: 100vh;
-  min-height: 100vh; */
   background: #F7DCAD;
   color: #794A3A;
   font-family: "Atma", sans-serif;

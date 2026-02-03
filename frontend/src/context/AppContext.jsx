@@ -1,6 +1,5 @@
 import React, { createContext, useState } from 'react';
 import Cookies from 'js-cookie'
-import { toast } from 'react-toastify';
 export const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {

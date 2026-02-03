@@ -33,7 +33,7 @@ export default function Chat() {
                 message: text,
                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             };
-            // Wysyłamy do serwera
+            // wysyłamy do serwera
             socket.emit('send_message', msgPayload);
             setText("");
         }

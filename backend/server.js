@@ -37,7 +37,6 @@ db.serialize(() => {
 });
 
 const roomSessions = {};
-// Funkcja generująca słowo dla konkretnego pokoju
 async function generateWordForRoom(roomName) {
     const url = `https://random-word-api.herokuapp.com/word?length=5`;
     try {
@@ -60,40 +59,6 @@ async function generateWordForRoom(roomName) {
 const rooms = ['Globalny', 'Pokój 1', 'Pokój 2', 'Eksperci'];
 rooms.forEach(room => generateWordForRoom(room));
 
-async function generateNewWord(userId) {
-  const url = `https://random-word-api.herokuapp.com/word?length=5`;
-  try {
-    const response = await fetch(url);
-    if (response.ok) {
-        const words = await response.json();
-        const word = words[0].toUpperCase();
-        
-        userSessions[userId] = {
-            word: word,
-            startTime: new Date()
-        };
-        console.log(`Użytkownik ${userId} otrzymał słowo: ${word}`);
-        return word;
-    }
-  } catch (e) {
-      userSessions[userId] = { word: "KOTKI" };
-      return "KOTKI";
-  }
-}
-// app.post('/api/new-word/:room', verifyToken, async (req, res) => {
-//     const room = req.params.room;
-//     if (!rooms.includes(room)) {
-//         return res.status(400).json({ error: "Nieprawidłowy pokój" });
-//     }
-//     try {
-//         const word = await generateWordForRoom(room);
-//         res.json({ message: `Nowe słowo dla pokoju ${room}!`, status: "ready" });
-//     } catch (err) {
-//         console.error("Błąd generowania słowa:", err);
-//         res.status(500).json({ error: "Błąd serwera" });
-//     }
-// });
-
 app.post('/api/new-game', verifyToken, async (req, res) => {
   const room = req.params.room;
   if (!rooms.includes(room)) {
@@ -103,7 +68,6 @@ app.post('/api/new-game', verifyToken, async (req, res) => {
     const word = await generateNewWordForRoom(room);
     res.json({ message: "Nowe słowo wylosowane!", status:"ready" });
   } catch (err) {
-    console.error("Błąd generowania słowa:", err);
     res.status(500).json({ error: "Błąd serwera" });
   }  
 });
@@ -134,40 +98,12 @@ app.post('/api/login', (req, res) => {
   });
 });
 
-// Resetowanie statystyk (update)
-// app.put('/api/user/reset', verifyToken, (req, res) => {
-//   const token = req.headers['authorization'];
-//   if (!token) return res.status(401).json({ error: "Brak tokena" });
-//   jwt.verify(token, SECRET_KEY, (err, decoded) => {
-//     if (err) return res.status(401).json({ error: "Sesja wygasła" });
-//     db.run("UPDATE users SET score = 0 WHERE id = ?", [decoded.id], function(err) {
-//         if (err) return res.status(500).json({ error: "Błąd bazy danych" });
-//         res.json({ message: "Statystyki zostały zresetowane!" });
-//     });
-//   });
-// });
-
 app.put('/api/user/reset', verifyToken, (req, res) => {
     db.run("UPDATE users SET score = 0 WHERE id = ?", [req.userId], function(err) {
         if (err) return res.status(500).json({ error: "Błąd bazy danych" });
         res.json({ message: "Statystyki zostały zresetowane!" });
     });
 });
-
-// Usuwanie konta
-// app.delete('/api/user', (req, res) => {
-//     const token = req.headers['authorization'];
-//     if (!token) return res.status(401).json({ error: "Brak tokena" });
-
-//     jwt.verify(token, SECRET_KEY, (err, decoded) => {
-//         if (err) return res.status(401).json({ error: "Sesja wygasła" });
-
-//         db.run("DELETE FROM users WHERE id = ?", [decoded.id], function(err) {
-//             if (err) return res.status(500).json({ error: "Błąd bazy danych" });
-//             res.json({ message: "Twoje konto zostało trwale usunięte." });
-//         });
-//     });
-// });
 
 app.delete('/api/user', verifyToken, (req, res) => {
     db.run("DELETE FROM users WHERE id = ?", [req.userId], function(err) {
@@ -179,7 +115,6 @@ app.delete('/api/user', verifyToken, (req, res) => {
 //logika gry
 app.post('/api/play', verifyToken, (req, res) => {
   const { guess, room } = req.body;
-  const userId = req.userId;
   const targetWord = roomSessions[room].word;
   const feedback = [];
   const upperGuess = guess.toUpperCase();
@@ -187,14 +122,9 @@ app.post('/api/play', verifyToken, (req, res) => {
   if (!roomSessions[room]) {
     return res.status(400).json({ error: "Nieprawidłowy pokój" });
   }
-
-  // if (!userSessions[userId]) {
-  //   return res.status(400).json({ error: "Najpierw zacznij nową grę!" });
-  // }
   if (!guess || guess.length !== 5) {
     return res.status(400).json({ error: "Słowo musi mieć 5 liter" });
   }
-
   // const userWord = userSessions[req.userId].word;
   for (let i = 0; i < 5; i++) {
     if (upperGuess[i] === targetWord[i]) feedback.push('green');
@@ -264,6 +194,7 @@ io.on('connection', (socket) => {
       mqttClient.publish('wordle/game/win', `Gracz ${data.user} odgadł hasło w pokoju ${room}!`);
       db.run("UPDATE users SET score = score + 1 WHERE username = ?", [data.user]);
       generateWordForRoom(room);
+      io.to(room).emit('game_reset', { winner: data.user, isLocked:true });
     }
     io.to(data.room).emit('receive_result', { user: data.user, result: data.result, isWin: isWin });
   });

@@ -11,7 +11,6 @@ body.dark .topbar{
 }
 
 .topbar{
-    /* position: fixed; */
     border-radius: 20px 20px 20px 0;
     z-index: 1;
     background-color: #B6ACE4;
@@ -64,7 +63,7 @@ body.dark .topbar{
     font-family: "Atma", sans-serif;
     margin:auto;
     font-size: 1rem;
-    color: #42572b;
+    color: #ffffff;
     background-color: #B6ACE4;
 }
 .logout{

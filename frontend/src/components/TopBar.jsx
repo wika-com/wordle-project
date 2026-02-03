@@ -7,7 +7,6 @@ export default function TopBar() {
     const data = useContext(AppContext);
     const nav = useNavigate();
     const location = useLocation();
-
     if (location.pathname === '/login' || !data.userName) {
         return null;
     }

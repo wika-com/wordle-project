@@ -34,23 +34,6 @@ export default function LoginPage() {
         }
     };
 
-    // const handleLogin = async () => {
-    //     setMessage("");
-    //     try {
-    //         const res = await axios.post('http://localhost:3000/api/login', { username, password });
-    //         // dane przez AppContext (to ustawi token i localStorage)
-    //         if (data.login) {
-    //             data.login(res.data.username, res.data.token);
-    //         }
-    //         setMessage("Zalogowano pomyślnie!");
-    //         toast.success("Zalogowano");
-    //         nav("/game");
-    //     } catch (err) {
-    //         toast.error("Niepoprawny login..");
-    //         console.error("Błąd logowania:", err);
-    //     }
-    // };
-
     const handleLogin = async () => {
     setMessage("");
     try {
@@ -60,7 +43,7 @@ export default function LoginPage() {
         });
         
         data.login(res.data.username, res.data.token, res.data.userId);
-        setMessage("Zalogowano pomyślnie!");
+        setMessage("Zalogowano!");
         toast.success("Zalogowano!");
         setTimeout(() => {
             nav("/game");

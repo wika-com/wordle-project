@@ -1,7 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../context/AppContext.jsx';
 import socket from '../socket';
-// import '../style/Sidebar.css';
 import "./Sidebar.css";
 import Chat from './Chat.jsx';
 

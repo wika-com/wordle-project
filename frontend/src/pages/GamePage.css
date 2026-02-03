@@ -38,10 +38,8 @@
     align-items: center;
     font-size: 2rem;
     font-weight: bold;
-    text-transform: uppercase;
     background-color: #fffaf0;
     border-radius: 8px;
-    transition: transform 0.2s;
 }
 
 .tile.green {
@@ -97,24 +95,18 @@
     background-color: #f4a261;
 }
 
-.submit:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.game-message {
+.gamemessage {
     font-weight: bold;
     font-size: 1.3rem;
-    margin: 10px 0;
+    margin: 0;
     padding: 10px 20px;
     border-radius: 10px;
     background-color: #f4a261;
     color: white;
 }
 
-/* Sekcja ustawień na dole */
 .account-settings {
-    margin-top: 40px;
+    margin-top: 1vh;
     display: flex;
     gap: 10px;
 }

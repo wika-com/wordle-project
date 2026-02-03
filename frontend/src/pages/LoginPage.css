@@ -59,8 +59,3 @@ button {
     border-color: #333b2a;
 
 }
-
-body.dark #block.MuiPaper-root{
-  background: #3d314a;
-  color: #fff;
-}

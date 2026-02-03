@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext, useRef } from 'react';
 import axios from 'axios';
 import { AppContext } from '../context/AppContext.jsx';
 import socket from "../socket";
-// import '../style/GamePage.css';
 import "./GamePage.css";
 import Sidebar from '../components/Sidebar.jsx';
 import { toast } from 'react-toastify';
@@ -10,13 +9,12 @@ import { toast } from 'react-toastify';
 export default function GamePage() {
     const data = useContext(AppContext);
     const [guess, setGuess] = useState('');
-    const [board, setBoard] = useState([]); // Historia prób
+    const [board, setBoard] = useState([]);
     const [message, setMessage] = useState('');
     const [gameOver, setGameOver] = useState(false);
-    // const [gameStarted, setGameStarted] = useState(false);
     const didInit = useRef(false);
 
-    // Inicjalizacja połączenia socket
+    // połączenia socket
     useEffect(() => {
         if (data.activeRoom && data.userName) {
         socket.emit('join_room', { room: data.activeRoom, user: data.userName });
@@ -24,7 +22,6 @@ export default function GamePage() {
         //nasłuchiwanie przy wyjściu z komponentu
         socket.on('receive_result', (payload) => {
             if (payload.user !== data.userName) {
-                console.log(`Gracz ${payload.user} w pokoju ${data.activeRoom} wysłał słowo!`);
                 if (payload.isWin) {
                     toast.info(`${payload.user} odgadł słowo!`);
                 }
@@ -42,19 +39,6 @@ export default function GamePage() {
         setMessage(`Witaj w pokoju: ${data.activeRoom}!`);
     }, [data.activeRoom]);
 
-    // const startNewGame = async () => {
-    //     try {
-    //         await axios.post('http://localhost:3000/api/new-game', {}, {
-    //         headers: { Authorization: data.token }
-    //         });
-    //         setBoard([]);
-    //         setGuess('');
-    //         setGameOver(false);
-    //         setMessage('');
-    //     } catch (err) {
-    //         alert("Nie udało się zacząć nowej gry :(")
-    //     }  
-    // };
     const startNewGame = () => {
         setBoard([]);
         setGuess('');
@@ -69,14 +53,6 @@ export default function GamePage() {
         startNewGame();
     }, []);
 
-
-    // useEffect(() => {
-    //     if (board.length === 0 && !gameOver) {
-    //         startNewGame();
-    //     }
-    // }, []);
-
-    // Resetowanie statystyk
     const handleReset = async () => {
         if (!window.confirm("Czy na pewno chcesz zresetować swój wynik?")) return;
         try {
@@ -89,7 +65,6 @@ export default function GamePage() {
         }
     };
 
-    // Usuwanie konta
     const handleDeleteAccount = async () => {
         if (!window.confirm("Czy napewno chcesz usunąć konto?")) return;
         try {
@@ -103,10 +78,13 @@ export default function GamePage() {
         }
     };
 
-    // Logika wysyłania słowa
     const submitGuess = async () => {
         if (gameOver) return;
-        if (guess.length !== 5) return alert("Słowo musi mieć 5 liter!");
+        if (guess.length !== 5) return toast.error("Słowo musi mieć 5 liter!");
+        if (!/^[A-Za-z0-9ąćęłńóśżź]+$/.test(guess)) {
+            toast.error("Hasło zawiera niedozwolone znaki: , ! @ % # * + $ ?");
+            return;
+        }
         
         try {
             const res = await axios.post('http://localhost:3000/api/play', 
@@ -145,6 +123,19 @@ export default function GamePage() {
             setMessage("Sesja wygasła lub błąd serwera.");
         }
     };
+    const renderEmptyRows = () => {
+        const rows = [];
+        for (let i = board.length; i < 6; i++) {
+            rows.push(
+                <div key={i} className="row empty">
+                    {Array(5).fill(null).map((_, j) => (
+                        <span key={j} className="tile"></span>
+                    ))}
+                </div>
+            );
+        }
+        return rows;
+    };
 
     return (
         <div className='maingame'>
@@ -161,11 +152,7 @@ export default function GamePage() {
                             ))}
                         </div>
                     ))}
-                    {[...Array(Math.max(0, 6 - board.length))].map((_, i) => (
-                        <div key={`empty-${i}`} className="row empty">
-                            {[...Array(5)].map((_, j) => <span key={j} className="tile"></span>)}
-                        </div>
-                    ))}
+                    {renderEmptyRows()}
                 </div>
 
                 <div className="controls">
@@ -173,15 +160,15 @@ export default function GamePage() {
                         maxLength={5} 
                         value={guess} 
                         onChange={e => setGuess(e.target.value.toUpperCase())} 
+                        onKeyDown={(e) => { if (e.key === 'Enter') { submitGuess(); }}}
                         disabled={gameOver}
-                        onKeyPress={(e) => e.key === 'Enter' && submitGuess()}
                         placeholder="WPISZ SŁOWO"
                     />
                     <button className="submit" onClick={submitGuess} disabled={gameOver}>Sprawdź</button>
                     {gameOver && <button className="btn-newgame" onClick={startNewGame}>Nowa Gra</button>}
                 </div>
 
-                {message && <p className="game-message">{message}</p>}
+                {message && <p className="gamemessage">{message}</p>}
 
                 <div className="account-settings">
                     <button onClick={handleReset}>Resetuj statystyki</button>
