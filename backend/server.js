@@ -48,6 +48,7 @@ async function generateWordForRoom(roomName) {
           word: word,
           lastUpdated: new Date()
         };
+        mqttClient.publish(`wordle/game/${roomName}/new-round`, `Nowe słowo wylosowane dla pokoju: ${roomName}`);
         console.log(`Pokój [${roomName}] otrzymał słowo: ${word}`);
         return word;
       }
@@ -57,15 +58,14 @@ async function generateWordForRoom(roomName) {
     }
 }
 const rooms = ['Globalny', 'Pokój 1', 'Pokój 2', 'Eksperci'];
-rooms.forEach(room => generateWordForRoom(room));
 
 app.post('/api/new-game', verifyToken, async (req, res) => {
-  const room = req.params.room;
+  const room = req.body;
   if (!rooms.includes(room)) {
       return res.status(400).json({ error: "Nieprawidłowy pokój" });
   }
   try{
-    const word = await generateNewWordForRoom(room);
+    const word = await generateWordForRoom(room);
     res.json({ message: "Nowe słowo wylosowane!", status:"ready" });
   } catch (err) {
     res.status(500).json({ error: "Błąd serwera" });
@@ -115,16 +115,16 @@ app.delete('/api/user', verifyToken, (req, res) => {
 //logika gry
 app.post('/api/play', verifyToken, (req, res) => {
   const { guess, room } = req.body;
-  const targetWord = roomSessions[room].word;
-  const feedback = [];
-  const upperGuess = guess.toUpperCase();
-
   if (!roomSessions[room]) {
     return res.status(400).json({ error: "Nieprawidłowy pokój" });
   }
   if (!guess || guess.length !== 5) {
     return res.status(400).json({ error: "Słowo musi mieć 5 liter" });
   }
+  const targetWord = roomSessions[room].word;
+  const feedback = [];
+  const upperGuess = guess.toUpperCase();
+
   // const userWord = userSessions[req.userId].word;
   for (let i = 0; i < 5; i++) {
     if (upperGuess[i] === targetWord[i]) feedback.push('green');
@@ -150,6 +150,7 @@ const mqttClient = mqtt.connect('mqtt://broker.hivemq.com');
 mqttClient.on('connect', () => {
   console.log('Połączono z MQTT');
   mqttClient.subscribe('wordle/game/win');
+  rooms.forEach(room => generateWordForRoom(room));
 });
 
 // WEBSOCKET
