@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordle-backend
+  namespace: wordle-game
+spec:
+  replicas: 2 # Wymóg: minimum 2 repliki
+  strategy:
+    type: RollingUpdate # Wymóg: strategia rolling update
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: wordle-backend
+  template:
+    metadata:
+      labels:
+        app: wordle-backend
+    spec:
+      # SecurityContext (Wymóg 8%)
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+      
+      # InitContainer (Wymóg 8%): Czeka aż baza danych zacznie odpowiadać
+      initContainers:
+      - name: wait-for-db
+        image: busybox:1.36
+        command: ['sh', '-c', 'until nc -z -v -w3 wordle-db-svc 5432; do echo "Czekanie na baze danych..."; sleep 2; done;']
+      
+      containers:
+      - name: backend
+        image: TWOJ_REJESTR/wordle-backend:latest # Budowane w CI/CD
+        ports:
+        - containerPort: 3000
+        resources: # Wymóg 10%: Limity zasobów
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: wordle-config
+              key: DATABASE_URL
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: wordle-secrets
+              key: jwt-secret
+        # Probes (Wymóg 10%)
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+# Główny kontroler Twojej aplikacji. Zawiera m.in. sondy sprawdzające endpointy /health i /ready.

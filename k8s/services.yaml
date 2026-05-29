@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordle-backend-svc
+  namespace: wordle-game
+spec:
+  ports:
+  - port: 3000
+    targetPort: 3000
+  selector:
+    app: wordle-backend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordle-db-svc
+  namespace: wordle-game
+spec:
+  ports:
+  - port: 5432
+  selector:
+    app: wordle-db
+  clusterIP: None # Headless service dla StatefulSet
+  # Wystawia backend wewnątrz klastra i tworzy stabilny adres dla bazy (baza nie jest dostępna z zewnątrz).

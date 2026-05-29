@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordle-frontend
+  namespace: wordle-game
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wordle-frontend
+  template:
+    metadata:
+      labels:
+        app: wordle-frontend
+    spec:
+      containers:
+      - name: frontend
+        image: nginx:alpine # Najprostszy serwer dla frontendu
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordle-frontend-svc
+  namespace: wordle-game
+spec:
+  ports:
+  - port: 80
+    targetPort: 80
+  selector:
+    app: wordle-frontend

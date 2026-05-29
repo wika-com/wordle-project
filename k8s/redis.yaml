@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wordle-cache
+  namespace: wordle-game
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wordle-cache
+  template:
+    metadata:
+      labels:
+        app: wordle-cache
+    spec:
+      containers:
+      - name: redis
+        image: redis:7-alpine
+        ports:
+        - containerPort: 6373
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordle-cache-svc
+  namespace: wordle-game
+spec:
+  ports:
+  - port: 6379
+    targetPort: 6379
+  selector:
+    app: wordle-cache

@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: wordle-db
+  namespace: wordle-game
+spec:
+  serviceName: "wordle-db-svc"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wordle-db
+  template:
+    metadata:
+      labels:
+        app: wordle-db
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15-alpine
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_DB
+          value: "wordle_db"
+        - name: POSTGRES_USER
+          value: "wordle_user"
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: wordle-secrets
+              key: postgres-password
+        volumeMounts:
+        - name: db-placeholder
+          mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates: # Wymóg PVC w StatefulSet
+  - metadata:
+      name: db-placeholder
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
+# Dzięki volumeClaimTemplates dane przetrwają restarty podów.

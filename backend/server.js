@@ -2,18 +2,34 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const mqtt = require('mqtt');
-const sqlite3 = require('sqlite3').verbose();
+const { Pool } = require('pg');
+// const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const promBundle = require('express-prom-bundle');
 
 const app = express();
-const SECRET_KEY = "MOJ_TAJNY_KLUCZ_123";
+const SECRET_KEY = process.env.SECRET_KEY || "MOJ_TAJNY_KLUCZ_123";
+const DATABASE_URL = process.env.DATABASE_URL || "postgres://wordle_user:wordlepass@localhost:5432/wordle_db";
+const MQTT_URL = process.env.MQTT_URL || "mqtt://broker.hivemq.com";
+
 app.use(express.json());
 app.use(cors());
+
+const metricsMiddleware = promBundle({
+    includeMethod: true,
+    includePath: true,
+    promClient: { collectDefaultMetrics: {} }
+});
+app.use(metricsMiddleware);
+
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
-const db = new sqlite3.Database('./wordle.db');
+const db = new Pool({
+    connectionString: DATABASE_URL,
+});
+// const db = new sqlite3.Database('./wordle.db');
 // const userSessions = {};
 
 function verifyToken(req, res, next) {
@@ -27,13 +43,44 @@ function verifyToken(req, res, next) {
 }
 
 // Baza danych
-db.serialize(() => {
-  db.run(`CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT, 
-      username TEXT UNIQUE, 
-      password TEXT, 
-      score INTEGER DEFAULT 0
-  )`);
+const initDb = async () => {
+    try {
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY, 
+                username TEXT UNIQUE, 
+                password TEXT, 
+                score INTEGER DEFAULT 0
+            )
+        `);
+        console.log("Połączono z PostgreSQL i zainicjalizowano tabelę.");
+    } catch (err) {
+        console.error("Błąd inicjalizacji bazy danych:", err);
+    }
+};
+initDb();
+// db.serialize(() => {
+//   db.run(`CREATE TABLE IF NOT EXISTS users (
+//       id INTEGER PRIMARY KEY AUTOINCREMENT, 
+//       username TEXT UNIQUE, 
+//       password TEXT, 
+//       score INTEGER DEFAULT 0
+//   )`);
+// });
+
+// livenessProbe: sprawdza, czy aplikacja żyje
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: "UP", timestamp: new Date() });
+});
+
+// readinessProbe: sprawdza, czy aplikacja jest gotowa przyjmować ruch (czy baza działa)
+app.get('/ready', async (req, res) => {
+    try {
+        await db.query('SELECT 1'); // Szybki test połączenia z bazą
+        res.status(200).json({ status: "READY" });
+    } catch (err) {
+        res.status(500).json({ status: "NOT_READY", error: err.message });
+    }
 });
 
 const roomSessions = {};
@@ -60,12 +107,12 @@ async function generateWordForRoom(roomName) {
 const rooms = ['Globalny', 'Pokój 1', 'Pokój 2', 'Eksperci'];
 
 app.post('/api/new-game', verifyToken, async (req, res) => {
-  const room = req.body;
+  const {room} = req.body;
   if (!rooms.includes(room)) {
       return res.status(400).json({ error: "Nieprawidłowy pokój" });
   }
   try{
-    const word = await generateWordForRoom(room);
+    await generateWordForRoom(room);
     res.json({ message: "Nowe słowo wylosowane!", status:"ready" });
   } catch (err) {
     res.status(500).json({ error: "Błąd serwera" });
@@ -76,40 +123,67 @@ app.post('/api/register', async (req, res) => {
   try {
       const { username, password } = req.body;
       const hashedPassword = await bcrypt.hash(password, 10);
-      db.run("INSERT INTO users (username, password) VALUES (?, ?)", [username, hashedPassword], function(err) {
-        if (err) return res.status(400).json({ error: "Użytkownik istnieje!" });
-        res.status(201).json({ id: this.lastID });
-      });
+
+      await db.query("INSERT INTO users (username, password) VALUES ($1, $2)", [username, hashedPassword]);
+        res.status(201).json({ message: "Zarejestrowano pomyślnie" });
   } catch (e) {
+    if (e.code === '23505') { // Kod błędu dla unikalnego wpisu w Postgres (Duplicate key)
+          return res.status(400).json({ error: "Użytkownik istnieje!" });
+      }
     res.status(500).json({ error: "Błąd serwera" })
   }
 });
 
 //logowaniee
-app.post('/api/login', (req, res) => {
-  const { username, password } = req.body;
-  db.get("SELECT * FROM users WHERE username = ?", [username], async (err, user) => {
+app.post('/api/login', async (req, res) => {
+  try {
+    const result = await db.query("SELECT * FROM users WHERE username = $1", [username]);
+    const user = result.rows[0];
+
     if (user && await bcrypt.compare(password, user.password)) {
       const token = jwt.sign({ id: user.id, username: user.username }, SECRET_KEY);
-      res.json({ token, username: user.username, userId:user.id });
+      res.json({ token, username: user.username, userId: user.id });
     } else {
       res.status(401).json({ error: "Błędne dane" });
     }
-  });
+  } catch (err) {
+    res.status(500).json({ error: "Błąd serwera" });
+  }
+  // const { username, password } = req.body;
+  // db.get("SELECT * FROM users WHERE username = ?", [username], async (err, user) => {
+  //   if (user && await bcrypt.compare(password, user.password)) {
+  //     const token = jwt.sign({ id: user.id, username: user.username }, SECRET_KEY);
+  //     res.json({ token, username: user.username, userId:user.id });
+  //   } else {
+  //     res.status(401).json({ error: "Błędne dane" });
+  //   }
+  // });
 });
 
-app.put('/api/user/reset', verifyToken, (req, res) => {
-    db.run("UPDATE users SET score = 0 WHERE id = ?", [req.userId], function(err) {
-        if (err) return res.status(500).json({ error: "Błąd bazy danych" });
+app.put('/api/user/reset', verifyToken, async (req, res) => {
+  try {
+        await db.query("UPDATE users SET score = 0 WHERE id = $1", [req.userId]);
         res.json({ message: "Statystyki zostały zresetowane!" });
-    });
+    } catch (err) {
+        res.status(500).json({ error: "Błąd bazy danych" });
+    }
+    // db.run("UPDATE users SET score = 0 WHERE id = ?", [req.userId], function(err) {
+    //     if (err) return res.status(500).json({ error: "Błąd bazy danych" });
+    //     res.json({ message: "Statystyki zostały zresetowane!" });
+    // });
 });
 
-app.delete('/api/user', verifyToken, (req, res) => {
-    db.run("DELETE FROM users WHERE id = ?", [req.userId], function(err) {
-        if (err) return res.status(500).json({ error: "Błąd bazy danych" });
+app.delete('/api/user', verifyToken, async (req, res) => {
+  try {
+        await db.query("DELETE FROM users WHERE id = $1", [req.userId]);
         res.json({ message: "Twoje konto zostało trwale usunięte." });
-    });
+    } catch (err) {
+        res.status(500).json({ error: "Błąd bazy danych" });
+    }
+    // db.run("DELETE FROM users WHERE id = ?", [req.userId], function(err) {
+    //     if (err) return res.status(500).json({ error: "Błąd bazy danych" });
+    //     res.json({ message: "Twoje konto zostało trwale usunięte." });
+    // });
 });
 
 //logika gry
@@ -135,18 +209,30 @@ app.post('/api/play', verifyToken, (req, res) => {
 });
 
 //statystyki
-app.get('/api/stats', (req, res) => {
-  db.all("SELECT * FROM users", [], (err, rows) => res.json(rows));
+app.get('/api/stats', async (req, res) => {
+  try {
+        const result = await db.query("SELECT id, username, score FROM users ORDER BY score DESC");
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: "Błąd bazy danych" });
+    }
+  // db.all("SELECT * FROM users", [], (err, rows) => res.json(rows));
 });
 
 // Wyszukiwanie wzorca
-app.get('/api/search/:pattern', (req, res) => {
+app.get('/api/search/:pattern', async (req, res) => {
   const pattern = `%${req.params.pattern}%`;
-  db.all("SELECT * FROM users WHERE username LIKE ?", [pattern], (err, rows) => res.json(rows));
+  try {
+      const result = await db.query("SELECT id, username, score FROM users WHERE username LIKE $1", [pattern]);
+      res.json(result.rows);
+  } catch (err) {
+      res.status(500).json({ error: "Błąd bazy danych" });
+  }
+  // db.all("SELECT * FROM users WHERE username LIKE ?", [pattern], (err, rows) => res.json(rows));
 });
 
 // MQTT
-const mqttClient = mqtt.connect('mqtt://broker.hivemq.com');
+const mqttClient = mqtt.connect(MQTT_URL);
 mqttClient.on('connect', () => {
   console.log('Połączono z MQTT');
   mqttClient.subscribe('wordle/game/win');
@@ -186,14 +272,19 @@ io.on('connection', (socket) => {
   });
 
   //Logika sprawdzania słowa 
-  socket.on('send_guess', (data) => {
+  socket.on('send_guess', async (data) => {
     const room = data.room;
     const session = roomSessions[room];
     if (!session) return;
     const isWin = data.guess.toUpperCase() === session.word;
     if(isWin) {
       mqttClient.publish('wordle/game/win', `Gracz ${data.user} odgadł hasło w pokoju ${room}!`);
-      db.run("UPDATE users SET score = score + 1 WHERE username = ?", [data.user]);
+      // db.run("UPDATE users SET score = score + 1 WHERE username = ?", [data.user]);
+      try {
+          await db.query("UPDATE users SET score = score + 1 WHERE username = $1", [data.user]);
+      } catch (err) {
+          console.error("Nie udało się zaktualizować wyniku:", err);
+      }
       generateWordForRoom(room);
       io.to(room).emit('game_reset', { winner: data.user, isLocked:true });
     }
@@ -201,4 +292,5 @@ io.on('connection', (socket) => {
   });
 });
 
-server.listen(3000, () => console.log('Serwer działa na porcie 3000'));
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => console.log(`Serwer działa na porcie ${PORT}`));

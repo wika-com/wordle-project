@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: wordle-ingress
+  namespace: wordle-game
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: wordle-backend-svc
+            port:
+              number: 3000
+# Wpuszcza ruch z internetu prosto do Twojej usługi backendowej.
