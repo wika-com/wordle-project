@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: nginx:alpine # Najprostszy serwer dla frontendu
+        image: wworonecka/wordle-frontend:latest # Najprostszy serwer dla frontendu
         ports:
         - containerPort: 80
 ---
