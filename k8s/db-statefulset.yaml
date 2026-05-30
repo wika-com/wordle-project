@@ -40,4 +40,4 @@ spec:
       resources:
         requests:
           storage: 1Gi
-# Dzięki volumeClaimTemplates dane przetrwają restarty podów.
+# dzięki volumeClaimTemplates dane przetrwają restarty podów

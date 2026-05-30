@@ -1,3 +1,16 @@
+# całą mapę sieciową klastra
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordle-frontend-svc
+  namespace: wordle-game
+spec:
+  ports:
+  - port: 80
+    targetPort: 80
+  selector:
+    app: wordle-frontend
+---
 apiVersion: v1
 kind: Service
 metadata:

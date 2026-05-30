@@ -44,7 +44,7 @@ spec:
         env:
         - name: DATABASE_URL
           valueFrom:
-            configMapKeyRef:
+            secretKeyRef:
               name: wordle-config
               key: DATABASE_URL
         - name: SECRET_KEY

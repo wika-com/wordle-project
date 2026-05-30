@@ -1,3 +1,5 @@
+# konfigurację kontenerów (kto, ile replik, jakie limity)
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,18 +17,6 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: wworonecka/wordle-frontend:latest # Najprostszy serwer dla frontendu
+        image: wworonecka/wordle-frontend:latest
         ports:
         - containerPort: 80
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: wordle-frontend-svc
-  namespace: wordle-game
-spec:
-  ports:
-  - port: 80
-    targetPort: 80
-  selector:
-    app: wordle-frontend
