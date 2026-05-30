@@ -32,7 +32,7 @@ spec:
         volumeMounts:
         - name: db-placeholder
           mountPath: /var/lib/postgresql/data
-  volumeClaimTemplates: # Wymóg PVC w StatefulSet
+  volumeClaimTemplates: 
   - metadata:
       name: db-placeholder
     spec:

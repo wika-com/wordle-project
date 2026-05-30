@@ -31,7 +31,7 @@ spec:
       
       containers:
       - name: backend
-        image: TWOJ_REJESTR/wordle-backend:latest # Budowane w CI/CD
+        image: wworonecka/wordle-backend:latest # Budowane w CI/CD
         ports:
         - containerPort: 3000
         resources: # Wymóg 10%: Limity zasobów
