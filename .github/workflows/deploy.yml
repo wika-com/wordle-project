@@ -1,51 +1,73 @@
 name: CI/CD Pipeline
-
+ 
 on:
   push:
     branches: [ main ]
-
+ 
+env:
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+ 
 jobs:
-  build-and-deploy:
+  build-and-push:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v3
-
+      uses: actions/checkout@v4
+ 
     - name: Login to Docker Hub
-      uses: docker/login-action@v2
+      uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-    - name: Build and Push Docker Image
-      uses: docker/build-push-action@v4
+ 
+    - name: Build and Push backend
+      uses: docker/build-push-action@v5
       with:
         context: ./backend
         push: true
         tags: ${{ secrets.DOCKERHUB_USERNAME }}/wordle-backend:latest
-
+ 
+    - name: Build and Push frontend
+      uses: docker/build-push-action@v5
+      with:
+        context: ./frontend
+        push: true
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/wordle-frontend:latest
+ 
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: false  # lokalny klaster niedostępny z GitHub Actions runners
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+ 
     - name: Set up Kubeconfig
       uses: azure/k8s-set-context@v3
       with:
         method: kubeconfig
         kubeconfig: ${{ secrets.KUBECONFIG }}
-
+ 
     - name: Deploy to Kubernetes
       run: |
         kubectl apply -f k8s/namespace.yaml
-        kubectl apply -f k8s/secrets.yaml
         kubectl apply -f k8s/configmap.yaml
+        kubectl apply -f k8s/secrets.yaml
         kubectl apply -f k8s/db-statefulset.yaml
+        kubectl apply -f k8s/redis.yaml
         kubectl apply -f k8s/services.yaml
         kubectl apply -f k8s/backend-deployment.yaml
+        kubectl apply -f k8s/frontend-deployment.yaml
         kubectl apply -f k8s/ingress.yaml
-        kubectl apply -f k8s/network-policy.yaml
-        kubectl apply -f k8s/pdb.yaml
-
-    - name: Verify Rollout Status # Wymóg: sprawdzenie statusu rolloutu
+ 
+    - name: Verify Rollout Status
       run: |
-        kubectl rollout status deployment/wordle-backend -n wordle-game
-        
-    - name: Deploy to Kubernetes
+        kubectl rollout status deployment/wordle-backend -n wordle-game --timeout=120s
+        kubectl rollout status deployment/wordle-frontend -n wordle-game --timeout=60s
+ 
+    - name: Smoke test
       run: |
-        kubectl apply -f k8s/
+        kubectl run smoke-test --image=curlimages/curl:8.5.0 \
+          --restart=Never --rm -it \
+          -n wordle-game \
+          -- curl -sf http://wordle-backend-svc:3000/health
