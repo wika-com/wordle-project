@@ -27,7 +27,7 @@ spec:
       - name: frontend
         image: wworonecka/wordle-frontend:latest
         ports:
-        - containerPort: 80
+        - containerPort: 8080
         resources:
           requests:
             memory: "64Mi"

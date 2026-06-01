@@ -7,8 +7,8 @@ COPY . .
 RUN npm run build
 
 # ETAP 2: Serwowanie plików przez Nginx (Wymóg produkcyjny k8s)
-FROM nginx:alpine
+FROM nginxinc/nginx-unprivileged:alpine
 # Kopiujemy zbudowane przez Vite pliki statyczne do folderu Nginxa
 COPY --from=builder /app/dist /usr/share/nginx/html
-EXPOSE 80
+EXPOSE 8080
 CMD ["nginx", "-g", "daemon off;"]

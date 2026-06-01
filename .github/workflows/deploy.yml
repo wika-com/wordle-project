@@ -55,11 +55,16 @@ jobs:
         kubectl apply -f k8s/backend-deployment.yaml
         kubectl apply -f k8s/frontend-deployment.yaml
         kubectl apply -f k8s/ingress.yaml
-
-    - name: Verify Rollout Status
+    
+    - name: Debug frontend pod
       run: |
-        kubectl rollout status deployment/wordle-backend -n wordle-game --timeout=120s
-        kubectl rollout status deployment/wordle-frontend -n wordle-game --timeout=120s
+        kubectl describe pod -l app=wordle-frontend -n wordle-game
+        kubectl logs -l app=wordle-frontend -n wordle-game --previous || true
+
+        - name: Verify Rollout Status
+          run: |
+            kubectl rollout status deployment/wordle-backend -n wordle-game --timeout=120s
+            kubectl rollout status deployment/wordle-frontend -n wordle-game --timeout=120s
 
     - name: Smoke test
       run: |
