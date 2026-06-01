@@ -52,6 +52,11 @@ spec:
             secretKeyRef:
               name: wordle-secrets
               key: jwt-secret
+        - name: MQTT_BROKER
+          valueFrom:
+            configMapKeyRef:
+              name: wordle-config
+              key: MQTT_BROKER
         # Probes (Wymóg 10%)
         livenessProbe:
           httpGet:

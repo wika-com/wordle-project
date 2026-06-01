@@ -16,11 +16,11 @@ spec:
             name: wordle-backend-svc
             port:
               number: 3000
-      - path: /api(/|$)(.*)
+      - path: /()(.*)
         pathType: Prefix
         backend:
           service:
-            name: wordle-backend-svc
+            name: wordle-frontend-svc
             port:
               number: 80
 # Wpuszcza ruch z internetu prosto do Twojej usługi backendowej.
