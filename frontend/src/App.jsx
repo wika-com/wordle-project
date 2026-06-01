@@ -5,7 +5,7 @@ import { ToastContainer } from 'react-toastify';
 import Layout from './Layout';
 import { io } from "socket.io-client";
 import './App.css';
-const socket = io("http://localhost:3000");
+const socket = io(window.location.origin, { path: "/socket.io" });
 
 function App() {
   return (

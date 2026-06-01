@@ -137,6 +137,7 @@ app.post('/api/register', async (req, res) => {
 //logowaniee
 app.post('/api/login', async (req, res) => {
   try {
+    const { username, password } = req.body;
     const result = await db.query("SELECT * FROM users WHERE username = $1", [username]);
     const user = result.rows[0];
 
