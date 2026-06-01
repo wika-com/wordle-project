@@ -59,13 +59,8 @@ jobs:
     - name: Verify Rollout Status
       run: |
         kubectl rollout status deployment/wordle-backend -n wordle-game --timeout=120s
-        kubectl rollout status deployment/wordle-frontend -n wordle-game --timeout=60s
- 
-    - name: Verify Rollout Status
-      run: |
-        kubectl rollout status deployment/wordle-backend -n wordle-game --timeout=120s
-        kubectl rollout status deployment/wordle-frontend -n wordle-game --timeout=60s
- 
+        kubectl rollout status deployment/wordle-frontend -n wordle-game --timeout=120s
+
     - name: Smoke test
       run: |
         kubectl run smoke-test --image=curlimages/curl:8.5.0 \
