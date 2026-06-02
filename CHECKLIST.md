@@ -90,7 +90,7 @@ Pokój [Globalny] otrzymał słowo: SPRAT
 Połączono z MQTT
 ```
 
-# instrukcja działania redis
+## instrukcja działania redis
   # Sprawdź czy status podu jest running
   kubectl get pods -l app=wordle-cache -n wordle-game
 
