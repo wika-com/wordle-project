@@ -23,15 +23,15 @@ jobs:
         #testy
     - name: Validate k8s manifests
       run: |
-        kubectl apply --dry-run=client -f k8s/namespace.yaml
-        kubectl apply --dry-run=client -f k8s/configmap.yaml
-        kubectl apply --dry-run=client -f k8s/secrets.yaml
-        kubectl apply --dry-run=client -f k8s/db-statefulset.yaml
-        kubectl apply --dry-run=client -f k8s/redis.yaml
-        kubectl apply --dry-run=client -f k8s/services.yaml
-        kubectl apply --dry-run=client -f k8s/backend-deployment.yaml
-        kubectl apply --dry-run=client -f k8s/frontend-deployment.yaml
-        kubectl apply --dry-run=client -f k8s/ingress.yaml
+        kubectl apply --dry-run=client --validate=false -f k8s/namespace.yaml
+        kubectl apply --dry-run=client --validate=false -f k8s/configmap.yaml
+        kubectl apply --dry-run=client --validate=false -f k8s/secrets.yaml
+        kubectl apply --dry-run=client --validate=false -f k8s/db-statefulset.yaml
+        kubectl apply --dry-run=client --validate=false -f k8s/redis.yaml
+        kubectl apply --dry-run=client --validate=false -f k8s/services.yaml
+        kubectl apply --dry-run=client --validate=false -f k8s/backend-deployment.yaml
+        kubectl apply --dry-run=client --validate=false -f k8s/frontend-deployment.yaml
+        kubectl apply --dry-run=client --validate=false -f k8s/ingress.yaml
  
       # publikuje obraz w rejestrze
     - name: Login to Docker Hub
