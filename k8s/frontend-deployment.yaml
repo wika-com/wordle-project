@@ -23,18 +23,20 @@ spec:
       securityContext:
         runAsNonRoot: true
         runAsUser: 101
+        
       containers:
       - name: frontend
         image: wworonecka/wordle-frontend:latest
         ports:
         - containerPort: 8080
-        resources:
+        resources: # limit zasobów
           requests:
             memory: "64Mi"
             cpu: "50m"
           limits:
             memory: "128Mi"
             cpu: "200m"
+        # probes
         readinessProbe:
           httpGet:
             path: /

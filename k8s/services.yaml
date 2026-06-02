@@ -1,4 +1,4 @@
-# całą mapę sieciową klastra
+# frontend
 apiVersion: v1
 kind: Service
 metadata:
@@ -11,6 +11,7 @@ spec:
   selector:
     app: wordle-frontend
 ---
+# backend
 apiVersion: v1
 kind: Service
 metadata:
@@ -23,6 +24,7 @@ spec:
   selector:
     app: wordle-backend
 ---
+# baza - dostępna tylko wewnątrz
 apiVersion: v1
 kind: Service
 metadata:
@@ -33,5 +35,17 @@ spec:
   - port: 5432
   selector:
     app: wordle-db
-  clusterIP: None # Headless service dla StatefulSet
-  # Wystawia backend wewnątrz klastra i tworzy stabilny adres dla bazy (baza nie jest dostępna z zewnątrz).
+  clusterIP: None
+---
+# cache dostępna tylko wewnątrz
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordle-cache-svc
+  namespace: wordle-game
+spec:
+  ports:
+  - port: 6379
+    targetPort: 6379
+  selector:
+    app: wordle-cache

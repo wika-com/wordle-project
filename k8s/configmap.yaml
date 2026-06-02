@@ -4,7 +4,4 @@ metadata:
   name: wordle-config
   namespace: wordle-game
 data:
-  # DATABASE_URL: "postgres://wordle_user:wordlepass@wordle-db-svc:5432/wordle_db"
-  MQTT_BROKER: "mqtt://broker.hivemq.com"
-
-# Przechowuje konfigurację jawną – adresy usług, które wstrzykniemy do zmiennych środowiskowych.
+  MQTT_BROKER: "mqtt://broker.hivemq.com" # dane niepoufne

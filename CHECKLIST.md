@@ -83,4 +83,13 @@ Pokój [Pokój 1] otrzymał słowo: BRILL
 Pokój [Globalny] otrzymał słowo: SPRAT
 Połączono z MQTT
 ```
+
+# instrukcja działania redis
+  # Sprawdź czy status podu jest running
+  kubectl get pods -l app=wordle-cache -n wordle-game
+
+  # Wpisz i sprawdź czy odpowie
+  kubectl exec -it deployment/wordle-cache -n wordle-game -- redis-cli ping
+  *powinno być* pong
+  
 *Link do workflow:* https://github.com/wika-com/wordle-project/actions/runs/26762955119/job/78881332116

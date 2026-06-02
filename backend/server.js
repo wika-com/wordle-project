@@ -59,24 +59,16 @@ const initDb = async () => {
     }
 };
 initDb();
-// db.serialize(() => {
-//   db.run(`CREATE TABLE IF NOT EXISTS users (
-//       id INTEGER PRIMARY KEY AUTOINCREMENT, 
-//       username TEXT UNIQUE, 
-//       password TEXT, 
-//       score INTEGER DEFAULT 0
-//   )`);
-// });
 
 // livenessProbe: sprawdza, czy aplikacja żyje
 app.get('/health', (req, res) => {
     res.status(200).json({ status: "UP", timestamp: new Date() });
 });
 
-// readinessProbe: sprawdza, czy aplikacja jest gotowa przyjmować ruch (czy baza działa)
+// readinessProbe: sprawdza, czy czy baza działa
 app.get('/ready', async (req, res) => {
     try {
-        await db.query('SELECT 1'); // Szybki test połączenia z bazą
+        await db.query('SELECT 1');
         res.status(200).json({ status: "READY" });
     } catch (err) {
         res.status(500).json({ status: "NOT_READY", error: err.message });

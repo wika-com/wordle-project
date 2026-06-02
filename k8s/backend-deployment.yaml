@@ -4,12 +4,12 @@ metadata:
   name: wordle-backend
   namespace: wordle-game
 spec:
-  replicas: 2 # Wymóg: minimum 2 repliki
+  replicas: 2 # 2 repliki - aby w razie awarii podu płynnie podmienić
   strategy:
-    type: RollingUpdate # Wymóg: strategia rolling update
+    type: RollingUpdate # strategia rolling update - wymiana starej wersji aplik na nową
     rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
+      maxSurge: 1 # o ile może przekroczyć liczbe podów przy wymianie
+      maxUnavailable: 0 # w momencie aktualizacji żaden pod nie może niedostępny
   selector:
     matchLabels:
       app: wordle-backend
@@ -18,12 +18,12 @@ spec:
       labels:
         app: wordle-backend
     spec:
-      # SecurityContext (Wymóg 8%)
+      # SecurityContext 
       securityContext:
         runAsNonRoot: true
         runAsUser: 10001
       
-      # InitContainer (Wymóg 8%): Czeka aż baza danych zacznie odpowiadać
+      # InitContainer - czeka aż baza danych zacznie odpowiadać
       initContainers:
       - name: wait-for-db
         image: busybox:1.36
@@ -31,17 +31,17 @@ spec:
       
       containers:
       - name: backend
-        image: wworonecka/wordle-backend:latest # Budowane w CI/CD
+        image: wworonecka/wordle-backend:latest # CI/CD
         ports:
         - containerPort: 3000
-        resources: # Wymóg 10%: Limity zasobów
+        resources: # limity zasobów
           requests:
             memory: "128Mi"
             cpu: "100m"
           limits:
             memory: "256Mi"
             cpu: "500m"
-        env:
+        env: # pobieranie z secret
         - name: DATABASE_URL
           valueFrom:
             secretKeyRef:
@@ -57,17 +57,20 @@ spec:
             configMapKeyRef:
               name: wordle-config
               key: MQTT_BROKER
-        # Probes (Wymóg 10%)
+        # Probes
         livenessProbe:
           httpGet:
             path: /health
             port: 3000
           initialDelaySeconds: 15
           periodSeconds: 20
+          failureThreshold: 3
         readinessProbe:
           httpGet:
             path: /ready
             port: 3000
           initialDelaySeconds: 10
           periodSeconds: 10
-# Główny kontroler Twojej aplikacji. Zawiera m.in. sondy sprawdzające endpointy /health i /ready.
+          failureThreshold: 3
+
+# Główny kontroler - zawiera sondy sprawdzające endpointy /health i /ready
