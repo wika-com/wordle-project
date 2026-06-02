@@ -64,6 +64,7 @@ kubectl get statefulset wordle-db -n wordle-game -o yaml - wyświetlenie szczeg�
 # wyświetlenie opisu poda
 kubectl get pods -n wordle-game
 kubectl describe pod <nazwa_poda_backendu> -n wordle-game
+
 Name:             wordle-backend-65ccc45786-qpmsj
 Namespace:        wordle-game
 Priority:         0
@@ -78,7 +79,8 @@ IP:               10.244.0.11
 IPs:
   IP:           10.244.0.11
 
-kubectl logs deployment/wordle-backend -c backend -n wordle-game --tail=50 - Wyświetlenie logów poda
+# Wyświetlenie logów poda
+kubectl logs deployment/wordle-backend -c backend -n wordle-game --tail=50 
 Found 2 pods, using pod/wordle-backend-65ccc45786-qpmsj
 Serwer działa na porcie 3000
 Połączono z PostgreSQL i zainicjalizowano tabelę.
@@ -90,12 +92,16 @@ Pokój [Globalny] otrzymał słowo: SPRAT
 Połączono z MQTT
 ```
 
-## instrukcja działania redis
-  # Sprawdź czy status podu jest running
+## Instrukcja działania redis
+  Sprawdź czy status podu jest running
+  ```bash
   kubectl get pods -l app=wordle-cache -n wordle-game
+```
 
   # Wpisz i sprawdź czy odpowie
+  ```bash
   kubectl exec -it deployment/wordle-cache -n wordle-game -- redis-cli ping
-  *powinno być* pong
+```
+  *powinno odpisać* pong
   
 *Link do workflow:* https://github.com/wika-com/wordle-project/actions/runs/26762955119/job/78881332116](https://github.com/wika-com/wordle-project/actions/runs/26790053524
