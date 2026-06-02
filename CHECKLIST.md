@@ -92,4 +92,4 @@ Połączono z MQTT
   kubectl exec -it deployment/wordle-cache -n wordle-game -- redis-cli ping
   *powinno być* pong
   
-*Link do workflow:* https://github.com/wika-com/wordle-project/actions/runs/26762955119/job/78881332116
+*Link do workflow:* https://github.com/wika-com/wordle-project/actions/runs/26762955119/job/78881332116](https://github.com/wika-com/wordle-project/actions/runs/26790053524
