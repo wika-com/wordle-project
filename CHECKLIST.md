@@ -10,21 +10,27 @@ Upewnij się, że masz uruchomiony lokalny klaster (np. `minikube start` lub `ki
 ## Komendy instalacyjne (Kolejność strukturalna):
 
 # 1. Przestrzeń nazw i konfiguracja bezpieczeństwa
+```bash
 kubectl apply -f k8s/namespace.yaml
 kubectl apply -f k8s/secrets.yaml
 kubectl apply -f k8s/configmap.yaml
+```
 
 # 2. Infrastruktura danych, cache oraz polityki sieciowe
+```bash
 kubectl apply -f k8s/db-statefulset.yaml
 kubectl apply -f k8s/redis.yaml
 kubectl apply -f k8s/network-policy.yaml
 kubectl apply -f k8s/pdb.yaml
+```
 
 # 3. Usługi sieciowe, aplikacja i Ingress
+```bash
 kubectl apply -f k8s/services.yaml
 kubectl apply -f k8s/backend-deployment.yaml
 kubectl apply -f k8s/frontend-deployment.yaml
 kubectl apply -f k8s/ingress.yaml
+```
 
 # Lista zasobów Kubernetes
 Namespace - k8s/namespace.yaml
