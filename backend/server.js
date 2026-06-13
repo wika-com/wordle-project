@@ -6,7 +6,6 @@ const { Pool } = require('pg');
 // const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const promBundle = require('express-prom-bundle');
 const { auth } = require("express-oauth2-jwt-bearer");
 const https = require("node:https");
@@ -44,23 +43,22 @@ const metricsMiddleware = promBundle({
 });
 app.use(metricsMiddleware);
 
+function requireAdmin(req, res, next) {
+    const roles = req.auth?.payload?.["https://wordle-api/roles"] || [];
+    if (!roles.includes("admin")) {
+        return res.status(403).json({
+            error: "Brak uprawnień administratora"
+        });
+    }
+    next();
+}
+
+
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 const db = new Pool({
     connectionString: DATABASE_URL,
 });
-// const db = new sqlite3.Database('./wordle.db');
-// const userSessions = {};
-
-function verifyToken(req, res, next) {
-    const token = req.headers['authorization'];
-    if (!token) return res.status(401).json({ error: "Brak tokena" });
-    jwt.verify(token, SECRET_KEY, (err, decoded) => {
-        if (err) return res.status(401).json({ error: "Sesja wygasła" });
-        req.userId = decoded.id;
-        next();
-    });
-}
 
 // Baza danych
 const initDb = async () => {
@@ -138,65 +136,29 @@ app.post('/api/new-game', checkJwt, async (req, res) => {
   }  
 });
 
-app.post('/api/register', async (req, res) => {
+app.put('/api/user/reset', checkJwt, async (req, res) => {
   try {
-      const { username, password } = req.body;
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      await db.query("INSERT INTO users (username, password) VALUES ($1, $2)", [username, hashedPassword]);
-        res.status(201).json({ message: "Zarejestrowano pomyślnie" });
-  } catch (e) {
-    if (e.code === '23505') { // Kod błędu dla unikalnego wpisu w Postgres (Duplicate key)
-          return res.status(400).json({ error: "Użytkownik istnieje!" });
-      }
-    res.status(500).json({ error: "Błąd serwera" })
-  }
-});
-
-//logowaniee
-app.post('/api/login', async (req, res) => {
-  try {
-    const { username, password } = req.body;
-    const result = await db.query("SELECT * FROM users WHERE username = $1", [username]);
-    const user = result.rows[0];
-
-    if (user && await bcrypt.compare(password, user.password)) {
-      const token = jwt.sign({ id: user.id, username: user.username }, SECRET_KEY);
-      res.json({ token, username: user.username, userId: user.id });
-    } else {
-      res.status(401).json({ error: "Błędne dane" });
-    }
-  } catch (err) {
-    res.status(500).json({ error: "Błąd serwera" });
-  }
-  // const { username, password } = req.body;
-  // db.get("SELECT * FROM users WHERE username = ?", [username], async (err, user) => {
-  //   if (user && await bcrypt.compare(password, user.password)) {
-  //     const token = jwt.sign({ id: user.id, username: user.username }, SECRET_KEY);
-  //     res.json({ token, username: user.username, userId:user.id });
-  //   } else {
-  //     res.status(401).json({ error: "Błędne dane" });
-  //   }
-  // });
-});
-
-app.put('/api/user/reset', verifyToken, async (req, res) => {
-  try {
-        await db.query("UPDATE users SET score = 0 WHERE id = $1", [req.userId]);
+        await db.query("UPDATE users SET score = 0 WHERE id = $1", [req.auth]);
         res.json({ message: "Statystyki zostały zresetowane!" });
     } catch (err) {
         res.status(500).json({ error: "Błąd bazy danych" });
     }
-    // db.run("UPDATE users SET score = 0 WHERE id = ?", [req.userId], function(err) {
-    //     if (err) return res.status(500).json({ error: "Błąd bazy danych" });
-    //     res.json({ message: "Statystyki zostały zresetowane!" });
-    // });
 });
 
-app.delete('/api/user', checkJwt, async (req, res) => {
+app.delete('/api/user', checkJwt, requireAdmin, async (req, res) => {
   try {
         await db.query("DELETE FROM users WHERE id = $1", [req.userId]);
         res.json({ message: "Twoje konto zostało trwale usunięte." });
+    } catch (err) {
+        res.status(500).json({ error: "Błąd bazy danych" });
+    }
+});
+
+app.delete('/api/admin/users/:id', checkJwt, requireAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        await db.query("DELETE FROM users WHERE id = $1", [id]);
+        res.json({ message: "Użytkownik został usunięty." });
     } catch (err) {
         res.status(500).json({ error: "Błąd bazy danych" });
     }
@@ -236,6 +198,15 @@ app.get('/api/stats', async (req, res) => {
   try {
         const result = await db.query("SELECT id, username, score FROM users ORDER BY score DESC");
         res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: "Błąd bazy danych" });
+    }
+});
+
+app.put('/api/admin/stats/reset', checkJwt, requireAdmin, async (req, res) => {
+    try {
+        await db.query("UPDATE users SET score = 0");
+        res.json({ message: "Statystyki wszystkich użytkowników zostały zresetowane." });
     } catch (err) {
         res.status(500).json({ error: "Błąd bazy danych" });
     }
