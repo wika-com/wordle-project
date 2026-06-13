@@ -5,6 +5,7 @@ import socket from "../socket";
 import "./GamePage.css";
 import Sidebar from '../components/Sidebar.jsx';
 import { toast } from 'react-toastify';
+import { useAuth0 } from "@auth0/auth0-react";
 
 export default function GamePage() {
     const data = useContext(AppContext);
@@ -13,6 +14,7 @@ export default function GamePage() {
     const [message, setMessage] = useState('');
     const [gameOver, setGameOver] = useState(false);
     const didInit = useRef(false);
+    const { getAccessTokenSilently } = useAuth0();
 
     // połączenia socket
     useEffect(() => {
@@ -54,10 +56,13 @@ export default function GamePage() {
     }, []);
 
     const handleReset = async () => {
+        const token = await getAccessTokenSilently();
         if (!window.confirm("Czy na pewno chcesz zresetować swój wynik?")) return;
         try {
             const res = await axios.put("http://localhost:3000/api/user/reset", {}, {
-                headers: { Authorization: data.token }
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
             });
             toast.success(res.data.message);
         } catch (err) {
@@ -66,10 +71,13 @@ export default function GamePage() {
     };
 
     const handleDeleteAccount = async () => {
+        const token = await getAccessTokenSilently();
         if (!window.confirm("Czy napewno chcesz usunąć konto?")) return;
         try {
             const res = await axios.delete("http://localhost:3000/api/user", {
-                headers: { Authorization: data.token }
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
             });
             toast.success(res.data.message);
             data.logout();
@@ -77,39 +85,119 @@ export default function GamePage() {
             toast.error("Błąd w usuwaniu konta...");
         }
     };
-
+    //
+    // const submitGuess = async () => {
+    //     const token = await getAccessTokenSilently();
+    //
+    //     if (gameOver) return;
+    //     if (guess.length !== 5) return toast.error("Słowo musi mieć 5 liter!");
+    //     if (!/^[A-Za-z0-9ąćęłńóśżź]+$/.test(guess)) {
+    //         toast.error("Hasło zawiera niedozwolone znaki: , ! @ % # * + $ ?");
+    //         return;
+    //     }
+    //
+    //     try {
+    //         const res = await axios.post(
+    //             'http://localhost:3000/api/play',
+    //             {
+    //                 guess: guess.toUpperCase(),
+    //                 room: data.activeRoom
+    //             },
+    //             {
+    //                 headers: {
+    //                     Authorization: `Bearer ${token}`
+    //                 }
+    //             }
+    //         );
+    //
+    //         const newFeedback = res.data.feedback;
+    //         const isCorrect = newFeedback.every(status => status === 'green');
+    //         const newBoard = [...board, { word: guess.toUpperCase(), feedback: newFeedback }];
+    //         const currentRoom = data.activeRoom;
+    //
+    //         setBoard(newBoard);
+    //         setGuess('');
+    //
+    //         // Socket.io - powiadomienie innych
+    //         socket.emit('send_guess', {
+    //             room: data.activeRoom,
+    //             user: data.userName,
+    //             guess: guess.toUpperCase(),
+    //             result: newFeedback,
+    //             isWin: isCorrect,
+    //             userId: data.userId
+    //         });
+    //
+    //         if (isCorrect) {
+    //             setGameOver(true);
+    //             setMessage("BRAWO! Odgadłeś słowo!");
+    //         } else if (newBoard.length >= 6) {
+    //             setGameOver(true);
+    //             setMessage("KONIEC GRY. Nie udało się odgadnąć słowa.");
+    //         }
+    //     } catch (err) {
+    //         setMessage("Sesja wygasła lub błąd serwera.");
+    //     }
+    // };
     const submitGuess = async () => {
         if (gameOver) return;
-        if (guess.length !== 5) return toast.error("Słowo musi mieć 5 liter!");
+
+        if (guess.length !== 5) {
+            return toast.error("Słowo musi mieć 5 liter!");
+        }
+
         if (!/^[A-Za-z0-9ąćęłńóśżź]+$/.test(guess)) {
             toast.error("Hasło zawiera niedozwolone znaki: , ! @ % # * + $ ?");
             return;
         }
-        
+
+        let token;
+
         try {
-            const res = await axios.post('http://localhost:3000/api/play', 
-                { guess: guess.toUpperCase(),
-                    room: data.activeRoom
+            token = await getAccessTokenSilently({
+                authorizationParams: {
+                    audience: "https://wordle-api",
+                    scope: "play:game",
                 },
-                { headers: { Authorization: data.token } }
+            });
+        } catch (e) {
+            console.log("AUTH0 TOKEN ERROR:", e);
+            toast.error(`Auth0 error: ${e.error || e.message}`);
+            return;
+        }
+
+        try {
+            console.log("ROOM:", data.activeRoom);
+            const res = await axios.post(
+                "http://localhost:3000/api/play",
+                {
+                    guess: guess.toUpperCase(),
+                    room: data.activeRoom,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
             );
 
             const newFeedback = res.data.feedback;
-            const isCorrect = newFeedback.every(status => status === 'green');
-            const newBoard = [...board, { word: guess.toUpperCase(), feedback: newFeedback }];
-            const currentRoom = data.activeRoom;
+            const isCorrect = newFeedback.every(status => status === "green");
+            const newBoard = [
+                ...board,
+                { word: guess.toUpperCase(), feedback: newFeedback },
+            ];
 
             setBoard(newBoard);
-            setGuess('');
+            setGuess("");
 
-            // Socket.io - powiadomienie innych
-            socket.emit('send_guess', {
+            socket.emit("send_guess", {
                 room: data.activeRoom,
                 user: data.userName,
                 guess: guess.toUpperCase(),
                 result: newFeedback,
                 isWin: isCorrect,
-                userId: data.userId
+                userId: data.userId,
             });
 
             if (isCorrect) {
@@ -120,9 +208,13 @@ export default function GamePage() {
                 setMessage("KONIEC GRY. Nie udało się odgadnąć słowa.");
             }
         } catch (err) {
+            console.log("API ERROR STATUS:", err.response?.status);
+            console.log("API ERROR DATA:", err.response?.data);
             setMessage("Sesja wygasła lub błąd serwera.");
         }
     };
+
+
     const renderEmptyRows = () => {
         const rows = [];
         for (let i = board.length; i < 6; i++) {

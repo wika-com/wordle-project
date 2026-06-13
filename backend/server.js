@@ -8,14 +8,34 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const promBundle = require('express-prom-bundle');
+const { auth } = require("express-oauth2-jwt-bearer");
+const https = require("node:https");
 
 const app = express();
 const SECRET_KEY = process.env.SECRET_KEY || "MOJ_TAJNY_KLUCZ_123";
 const DATABASE_URL = process.env.DATABASE_URL || "postgres://wordle_user:wordlepass@localhost:5432/wordle_db";
 const MQTT_URL = process.env.MQTT_URL || "mqtt://broker.hivemq.com";
 
+const fallbackWords = [
+    "KOTKI",
+    "DOMKI",
+    "LAMPA",
+    "MLEKO",
+    "TORTY",
+    "KWIAT",
+    "RYBKA",
+    "KARTA",
+    "NOCNY",
+    "MORZE"
+];
+
 app.use(express.json());
 app.use(cors());
+
+const checkJwt = auth({
+    audience: "https://wordle-api",
+    issuerBaseURL: "https://dev-5ln5q8rhsoy0fkmx.us.auth0.com/",
+});
 
 const metricsMiddleware = promBundle({
     includeMethod: true,
@@ -75,22 +95,29 @@ app.get('/ready', async (req, res) => {
     }
 });
 
+function getRandomLocalWord() {
+    const index = Math.floor(Math.random() * fallbackWords.length);
+    return fallbackWords[index];
+}
+
 const roomSessions = {};
 async function generateWordForRoom(roomName) {
-    const url = `https://random-word-api.herokuapp.com/word?length=5`;
+    // const url = `https://random-word-api.herokuapp.com/word?length=5`;
     try {
-      const response = await fetch(url);
-      if (response.ok) {
-        const words = await response.json();
-        const word = words[0].toUpperCase();
+        const word = getRandomLocalWord();
+
         roomSessions[roomName] = {
-          word: word,
-          lastUpdated: new Date()
+            word,
+            lastUpdated: new Date()
         };
-        mqttClient.publish(`wordle/game/${roomName}/new-round`, `Nowe słowo wylosowane dla pokoju: ${roomName}`);
+        mqttClient.publish(
+            `wordle/game/${roomName}/new-round`,
+            `Nowe słowo wylosowane dla pokoju: ${roomName}`
+        );
+
         console.log(`Pokój [${roomName}] otrzymał słowo: ${word}`);
         return word;
-      }
+
     } catch (e) {
       roomSessions[roomName] = { word: "KOTKI", lastUpdated: new Date() };
       return "KOTKI";
@@ -98,7 +125,7 @@ async function generateWordForRoom(roomName) {
 }
 const rooms = ['Globalny', 'Pokój 1', 'Pokój 2', 'Eksperci'];
 
-app.post('/api/new-game', verifyToken, async (req, res) => {
+app.post('/api/new-game', checkJwt, async (req, res) => {
   const {room} = req.body;
   if (!rooms.includes(room)) {
       return res.status(400).json({ error: "Nieprawidłowy pokój" });
@@ -166,24 +193,27 @@ app.put('/api/user/reset', verifyToken, async (req, res) => {
     // });
 });
 
-app.delete('/api/user', verifyToken, async (req, res) => {
+app.delete('/api/user', checkJwt, async (req, res) => {
   try {
         await db.query("DELETE FROM users WHERE id = $1", [req.userId]);
         res.json({ message: "Twoje konto zostało trwale usunięte." });
     } catch (err) {
         res.status(500).json({ error: "Błąd bazy danych" });
     }
-    // db.run("DELETE FROM users WHERE id = ?", [req.userId], function(err) {
-    //     if (err) return res.status(500).json({ error: "Błąd bazy danych" });
-    //     res.json({ message: "Twoje konto zostało trwale usunięte." });
-    // });
 });
 
 //logika gry
-app.post('/api/play', verifyToken, (req, res) => {
+app.post('/api/play', checkJwt, async (req, res) => {
   const { guess, room } = req.body;
+
+    if (!rooms.includes(room)) {
+        return res.status(400).json({ error: "Nieprawidłowy pokój" });
+    }
+
   if (!roomSessions[room]) {
-    return res.status(400).json({ error: "Nieprawidłowy pokój" });
+    // return res.status(400).json({ error: "Nieprawidłowy pokój" });
+    await generateWordForRoom(room);
+    console.log("SESSION:", roomSessions[room]);
   }
   if (!guess || guess.length !== 5) {
     return res.status(400).json({ error: "Słowo musi mieć 5 liter" });
@@ -209,7 +239,6 @@ app.get('/api/stats', async (req, res) => {
     } catch (err) {
         res.status(500).json({ error: "Błąd bazy danych" });
     }
-  // db.all("SELECT * FROM users", [], (err, rows) => res.json(rows));
 });
 
 // Wyszukiwanie wzorca

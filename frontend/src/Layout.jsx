@@ -5,13 +5,26 @@ import TopBar from './components/TopBar.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import GamePage from './pages/GamePage.jsx';
 import StatisticsPage from './pages/StatisticsPage.jsx';
+import { useAuth0 } from "@auth0/auth0-react";
+
 
 const ProtectedRoute = ({ children }) => {
-    const { userName } = useContext(AppContext);
-    return userName ? children : <Navigate to="/login" replace />;
+    const { isAuthenticated, isLoading } = useAuth0();
+
+    if (isLoading) {
+        return <div>Ładowanie...</div>;
+    }
+    return isAuthenticated
+        ? children : <Navigate to="/login" replace />;
 };
+
+// const ProtectedRoute = ({ children }) => {
+//     const { userName } = useContext(AppContext);
+//     return userName ? children : <Navigate to="/login" replace />;
+// };
 export default function Layout() {
     const { userName } = useContext(AppContext);
+    const { isAuthenticated, user, logout } = useAuth0();
 
     return (
         <div className="main">
@@ -20,9 +33,7 @@ export default function Layout() {
                 <main className="main-content">
                     <Routes>
                         <Route path="/" element={<Navigate to="/login" replace />} />
-                        <Route path="/login" element={
-                            userName ? <Navigate to="/game" replace /> : <LoginPage />
-                        } />
+                        <Route path="/login" element={ isAuthenticated ? <Navigate to="/game" replace /> : <LoginPage />}/>
                         <Route path="/game" element={
                             <ProtectedRoute><GamePage /></ProtectedRoute>
                         } />

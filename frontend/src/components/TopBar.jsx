@@ -2,12 +2,15 @@ import React, { useContext } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AppContext } from '../context/AppContext.jsx';
 import './TopBar.css';
+import { useAuth0 } from "@auth0/auth0-react";
 
 export default function TopBar() {
     const data = useContext(AppContext);
     const nav = useNavigate();
     const location = useLocation();
-    if (location.pathname === '/login' || !data.userName) {
+    const { isAuthenticated, user, logout } = useAuth0();
+
+    if (location.pathname === "/login" || !isAuthenticated) {
         return null;
     }
 
@@ -33,11 +36,14 @@ export default function TopBar() {
                 </nav>
             </div>
             <div className="right">
-                <span className="user">Gracz: <strong>{data.userName}</strong></span>
-                <button className="logout" onClick={() => {
-                    data.logout();
-                    nav('/login');
-                }}>
+                <span className="user">Gracz: <strong>{user?.name || user?.email}</strong></span>
+                <button
+                    className="logout"
+                    onClick={() =>
+                        logout({
+                            logoutParams: {
+                                returnTo: window.location.origin,
+                            },})}>
                     Wyloguj
                 </button>
             </div>
