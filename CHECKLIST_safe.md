@@ -1,0 +1,94 @@
+# Wordle Multiplayer OAuth
+
+Autor: Wiktoria Woronecka
+
+## Uruchomienie
+
+1. docker compose up -d
+2. cd backend
+4. node server.js
+5. cd frontend
+7. npm run dev
+
+## Auth0
+
+Authorization Server: Auth0
+
+1. Backend zabezpieczony OAuth 2.0
+Backend Node.js/Express jest zabezpieczony middlewarem Auth0:
+->server.js
+```
+   const checkJwt = auth({
+    audience: "https://wordle-api",
+    issuerBaseURL: "https://dev-5ln5q8rhsoy0fkmx.us.auth0.com/",
+    });
+```
+Endpointy wymagające zalogowania używają checkJwt, czyli przyjmują tylko poprawny access token wydany przez Auth0.
+Role:
+- admin
+- user
+
+2. Minimum 4 zabezpieczone endpointy
+-> server.js
+```
+POST /api/play
+POST /api/new-game
+PUT /api/user/reset
+DELETE /api/user
+PUT /api/admin/stats/reset
+DELETE /api/admin/users/:id
+```
+
+3. Endpoint uwzględniający role użytkownika
+```
+PUT /api/admin/stats/reset
+DELETE /api/admin/users/:id
+```
+
+4. Minimum 1 niezabezpieczony endpoint
+```
+GET /health
+GET /ready
+```
+Nie wymagają tokena i można je wywołać bez logowania.
+
+5. Frontend korzystający z backendu
+Frontend React korzysta z backendu przez axios.
+Po zalogowaniu Auth0 frontend pobiera token:
+*getAccessTokenSilently()*
+i wysyła go w nagłówku:
+*Authorization: Bearer <token>*
+do chronionych endpointów backendu.
+
+6. Baza danych
+Projekt korzysta z *PostgreSQL*.
+W bazie przechowywani są użytkownicy i ich wyniki:
+users:
+- id
+- username
+- password
+- score
+Po wygranej wynik użytkownika jest aktualizowany w bazie.
+
+7. Skonfigurowany authorization server
+Authorization serverem jest Auth0.
+W Auth0 skonfigurowano:
+```
+Application: Wordle Frontend
+API: Wordle API
+Audience: https://wordle-api
+Role: admin
+Scope: play:game
+```
+8. PKCE
+PKCE jest włączone, ponieważ aplikacja frontendowa jest typu Single Page Application i korzysta z Auth0 React SDK.
+Klient generuje code verifier i code challenge. Auth0 wydaje kod autoryzacyjny tylko aplikacji, która później przedstawi poprawny code verifier. 
+Dzięki temu przechwycenie samego authorization code nie pozwala uzyskać tokenu.
+
+9. Docker
+Docker Compose dla PostgreSQL
+
+10. Inny authorization server niż Keycloak
+*Auth0*
+
+11. Wolumen danych dla authorization servera

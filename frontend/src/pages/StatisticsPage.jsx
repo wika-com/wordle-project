@@ -87,7 +87,7 @@ export default function StatisticsPage() {
 
     return (
         <div className="statsContainer">
-            <h1 className="statNname">Ranking Graczy</h1>
+            <h1 className="statsName">Ranking Graczy</h1>
             <div className="searchBox">
                 <input 
                     type="text" 
@@ -107,6 +107,8 @@ export default function StatisticsPage() {
                                 <th>Poz.</th>
                                 <th>Użytkownik</th>
                                 <th style={{ textAlign: 'right' }}>Wygrane</th>
+                                <th>Opcje</th>
+
                             </tr>
                         </thead>
                         <tbody>
@@ -116,9 +118,9 @@ export default function StatisticsPage() {
                                     <td>{user.username} {user.username === data.userName && "(Ty)"}</td>
                                     <td style={{ textAlign: 'right' }}>{user.score}</td>
                                     {isAdmin && (
-                                        <button onClick={() => handleDeleteUser(user.id)}>
+                                        <td> <button className="usun" onClick={() => handleDeleteUser(user.id)}>
                                             Usuń
-                                        </button>
+                                        </button> </td>
                                     )}
                                 </tr>
                             ))}
@@ -128,7 +130,7 @@ export default function StatisticsPage() {
                         <div className="adminPanel">
                             <h3>Panel administratora</h3>
 
-                            <button onClick={handleResetAllStats}>
+                            <button className="reset" onClick={handleResetAllStats}>
                                 Resetuj statystyki wszystkich
                             </button>
                         </div>

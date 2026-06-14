@@ -41,7 +41,7 @@ h1{
     font-family: "Atma", sans-serif;
     justify-content: center;
     margin-bottom: 3vh;
-    font-size: 10vh;
+    font-size: 15vh;
     color: #ABCF82;
 }
 input{
@@ -53,9 +53,12 @@ button {
     background-color: #ABCF82;
     font-size: 2vh;
     padding: 1rem;
-    width: 7rem;
+    width: 9rem;
     margin: 0.5rem;
     border-radius: 15px;
-    border-color: #333b2a;
+    /*border-color: #ffffff;*/
 
+}
+#button {
+    margin-left: 5rem;
 }

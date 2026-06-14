@@ -16,21 +16,136 @@ const DATABASE_URL = process.env.DATABASE_URL || "postgres://wordle_user:wordlep
 const MQTT_URL = process.env.MQTT_URL || "mqtt://broker.hivemq.com";
 
 const fallbackWords = [
-    "KOTKI",
-    "DOMKI",
     "LAMPA",
-    "MLEKO",
-    "TORTY",
-    "KWIAT",
-    "RYBKA",
     "KARTA",
-    "NOCNY",
-    "MORZE"
+    "MORZE",
+    "ROWEK",
+    "KWIAT",
+    "MYSZA",
+    "RYBAK",
+    "ZAMEK",
+    "OBRAZ",
+    "DYWAN",
+    "KLUCZ",
+    "SKAŁA",
+    "RZEKA",
+    "WYSPA",
+    "BURZA",
+    "WIATR",
+    "CHATA",
+    "PAŁAC",
+    "ULICA",
+    "SKLEP",
+    "TEATR",
+    "OPERA",
+    "BAJKA",
+    "SERCE",
+    "MLEKO",
+    "MASŁO",
+    "CHLEB",
+    "KASZA",
+    "ŚLIWA",
+    "BANAN",
+    "MANGO",
+    "KAKAO",
+    "KOTEK",
+    "PIESE",
+    "SARNA",
+    "MOTYL",
+    "PANDA",
+    "ZEBRA",
+    "ORZEŁ",
+    "SOWAA",
+    "PIŁKA",
+    "OGIEŃ",
+    "LUTYY",
+    "DUMNY",
+    "CICHY",
+    "WOLNY",
+    "RADOS",
+    "SMUTE",
+    "BIAŁY",
+    "CZARN",
+    "SZARY",
+    "ZŁOTY",
+    "KOLOR",
+    "GITAR",
+    "FORTE",
+    "PIANO",
+    "NOŻYK",
+    "GARNE",
+    "ŁYŻKA",
+    "MISKA",
+    "WAZON",
+    "FOTEL",
+    "KANAP",
+    "PÓŁKA",
+    "ZEGAR",
+    "RADIO",
+    "EKRAN",
+    "MYSZK",
+    "KABEL",
+    "DROGA",
+    "MOSTY",
+    "TUNEL",
+    "PARKI",
+    "LASER",
+    "PLAŻA",
+    "WODOS",
+    "CHMUR",
+    "TĘCZA",
+    "MROZY",
+    "UPAŁY",
+    "GÓRAL",
+    "MNICH",
+    "KRÓLJ",
+    "KSIĄŻ",
+    "WÓZEK",
+    "POCIĄ",
+    "STATE",
+    "ŻAGEL",
+    "KURKA",
+    "JELEN",
+    "BÓBRY",
+    "KRETA",
+    "LILIA",
+    "RÓŻAA",
+    "TULIP",
+    "IRYSS",
+    "BRZEG",
+    "GLEBA",
+    "ZIARN",
+    "PLONY"
 ];
+
+const fs = require("fs");
+const path = require("path");
+function loadWords() {
+    const filePath = path.join(__dirname, "pl_full.txt");
+    const words = fs
+        .readFileSync(filePath, "utf8")
+        .split(/\r?\n/)
+        .map(line => line.trim().split(/\s+/)[0])
+        .filter(Boolean)
+        .map(word => word.toUpperCase())
+        .filter(word =>
+            word.length === 5 &&
+            /^[A-ZĄĆĘŁŃÓŚŹŻ]+$/.test(word)
+        );
+    console.log(`Załadowano ${words.length} słów 5-literowych`);
+    return words;
+}
+
+const wordsList = loadWords();
+function getRandomLocalWord() {
+    const index = Math.floor(Math.random() * wordsList.length);
+    return wordsList[index];
+}
 
 app.use(express.json());
 app.use(cors());
 
+// Backend zabezpieczony OAuth 2.0
 const checkJwt = auth({
     audience: "https://wordle-api",
     issuerBaseURL: "https://dev-5ln5q8rhsoy0fkmx.us.auth0.com/",
@@ -93,10 +208,10 @@ app.get('/ready', async (req, res) => {
     }
 });
 
-function getRandomLocalWord() {
-    const index = Math.floor(Math.random() * fallbackWords.length);
-    return fallbackWords[index];
-}
+// function getRandomLocalWord() {
+//     const index = Math.floor(Math.random() * fallbackWords.length);
+//     return fallbackWords[index];
+// }
 
 const roomSessions = {};
 async function generateWordForRoom(roomName) {
@@ -274,6 +389,13 @@ io.on('connection', (socket) => {
       mqttClient.publish('wordle/game/win', `Gracz ${data.user} odgadł hasło w pokoju ${room}!`);
       // db.run("UPDATE users SET score = score + 1 WHERE username = ?", [data.user]);
       try {
+          await db.query(
+              `INSERT INTO users (username, password, score)
+             VALUES ($1, '', 0)
+             ON CONFLICT (username) DO NOTHING`,
+              [data.user]
+          );
+
           await db.query("UPDATE users SET score = score + 1 WHERE username = $1", [data.user]);
       } catch (err) {
           console.error("Nie udało się zaktualizować wyniku:", err);

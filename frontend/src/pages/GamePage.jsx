@@ -14,7 +14,8 @@ export default function GamePage() {
     const [message, setMessage] = useState('');
     const [gameOver, setGameOver] = useState(false);
     const didInit = useRef(false);
-    const { getAccessTokenSilently } = useAuth0();
+    const { getAccessTokenSilently, user } = useAuth0();
+    const playerName = user?.email || user?.name || "Anonim";
 
     // połączenia socket
     useEffect(() => {
@@ -55,20 +56,20 @@ export default function GamePage() {
         startNewGame();
     }, []);
 
-    const handleReset = async () => {
-        const token = await getAccessTokenSilently();
-        if (!window.confirm("Czy na pewno chcesz zresetować swój wynik?")) return;
-        try {
-            const res = await axios.put("http://localhost:3000/api/user/reset", {}, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-            toast.success(res.data.message);
-        } catch (err) {
-            toast.error("Błąd w resetowaniu...");
-        }
-    };
+    // const handleReset = async () => {
+    //     const token = await getAccessTokenSilently();
+    //     if (!window.confirm("Czy na pewno chcesz zresetować swój wynik?")) return;
+    //     try {
+    //         const res = await axios.put("http://localhost:3000/api/user/reset", {}, {
+    //             headers: {
+    //                 Authorization: `Bearer ${token}`
+    //             }
+    //         });
+    //         toast.success(res.data.message);
+    //     } catch (err) {
+    //         toast.error("Błąd w resetowaniu...");
+    //     }
+    // };
 
     const handleDeleteAccount = async () => {
         const token = await getAccessTokenSilently();
@@ -85,60 +86,7 @@ export default function GamePage() {
             toast.error("Błąd w usuwaniu konta...");
         }
     };
-    //
-    // const submitGuess = async () => {
-    //     const token = await getAccessTokenSilently();
-    //
-    //     if (gameOver) return;
-    //     if (guess.length !== 5) return toast.error("Słowo musi mieć 5 liter!");
-    //     if (!/^[A-Za-z0-9ąćęłńóśżź]+$/.test(guess)) {
-    //         toast.error("Hasło zawiera niedozwolone znaki: , ! @ % # * + $ ?");
-    //         return;
-    //     }
-    //
-    //     try {
-    //         const res = await axios.post(
-    //             'http://localhost:3000/api/play',
-    //             {
-    //                 guess: guess.toUpperCase(),
-    //                 room: data.activeRoom
-    //             },
-    //             {
-    //                 headers: {
-    //                     Authorization: `Bearer ${token}`
-    //                 }
-    //             }
-    //         );
-    //
-    //         const newFeedback = res.data.feedback;
-    //         const isCorrect = newFeedback.every(status => status === 'green');
-    //         const newBoard = [...board, { word: guess.toUpperCase(), feedback: newFeedback }];
-    //         const currentRoom = data.activeRoom;
-    //
-    //         setBoard(newBoard);
-    //         setGuess('');
-    //
-    //         // Socket.io - powiadomienie innych
-    //         socket.emit('send_guess', {
-    //             room: data.activeRoom,
-    //             user: data.userName,
-    //             guess: guess.toUpperCase(),
-    //             result: newFeedback,
-    //             isWin: isCorrect,
-    //             userId: data.userId
-    //         });
-    //
-    //         if (isCorrect) {
-    //             setGameOver(true);
-    //             setMessage("BRAWO! Odgadłeś słowo!");
-    //         } else if (newBoard.length >= 6) {
-    //             setGameOver(true);
-    //             setMessage("KONIEC GRY. Nie udało się odgadnąć słowa.");
-    //         }
-    //     } catch (err) {
-    //         setMessage("Sesja wygasła lub błąd serwera.");
-    //     }
-    // };
+
     const submitGuess = async () => {
         if (gameOver) return;
 
@@ -146,13 +94,12 @@ export default function GamePage() {
             return toast.error("Słowo musi mieć 5 liter!");
         }
 
-        if (!/^[A-Za-z0-9ąćęłńóśżź]+$/.test(guess)) {
+        if (!/^[A-Za-z0-9ąćęłńóśżźĄĆĘŁŃÓŚŹŻ]+$/.test(guess)) {
             toast.error("Hasło zawiera niedozwolone znaki: , ! @ % # * + $ ?");
             return;
         }
 
         let token;
-
         try {
             token = await getAccessTokenSilently({
                 authorizationParams: {
@@ -193,7 +140,7 @@ export default function GamePage() {
 
             socket.emit("send_guess", {
                 room: data.activeRoom,
-                user: data.userName,
+                user: playerName,
                 guess: guess.toUpperCase(),
                 result: newFeedback,
                 isWin: isCorrect,
@@ -263,7 +210,7 @@ export default function GamePage() {
                 {message && <p className="gamemessage">{message}</p>}
 
                 <div className="settings">
-                    <button onClick={handleReset}>Resetuj statystyki</button>
+                    {/*<button onClick={handleReset}>Resetuj statystyki</button>*/}
                     <button onClick={handleDeleteAccount}>Usuń konto</button>
                 </div>
             </div>

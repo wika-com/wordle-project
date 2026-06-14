@@ -8,9 +8,9 @@
 
 .statsName {
     text-align: center;
-    font-size: 2rem;
+    font-size: 3rem;
     margin-bottom: 30px;
-    color: #ABCF82;
+    color: #ffffff;
 }
 
 .searchBox {
@@ -68,4 +68,20 @@
     text-align: center;
     padding: 20px;
     color: #818384;
+}
+
+.adminPanel{
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 3%;
+    padding-left: 1%;
+}
+.reset{
+    width: 90%;
+    margin: auto;
+}
+
+.usun{
+    width: 5rem;
+    height: 3rem;
 }
