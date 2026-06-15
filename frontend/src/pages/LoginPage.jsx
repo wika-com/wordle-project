@@ -11,11 +11,13 @@ export default function LoginPage() {
         user
     } = useAuth0();
     const nav = useNavigate();
+
     useEffect(() => {
         if (isAuthenticated) {
             nav("/game");
         }
     }, [isAuthenticated, nav]);
+
     if (isLoading) {
         return <p>Ładowanie...</p>;
     }

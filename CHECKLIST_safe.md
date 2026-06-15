@@ -28,21 +28,22 @@ Role:
 - admin
 - user
 
-2. Minimum 4 zabezpieczone endpointy
--> server.js
+2. Endpoint uwzględniający role użytkownika
 ```
-POST /api/play
-POST /api/new-game
-PUT /api/user/reset
-DELETE /api/user
 PUT /api/admin/stats/reset
 DELETE /api/admin/users/:id
 ```
 
-3. Endpoint uwzględniający role użytkownika
+3. Minimum 4 zabezpieczone endpointy
+-> server.js
 ```
+POST /api/play
+POST /api/new-game
+DELETE /api/user
 PUT /api/admin/stats/reset
 DELETE /api/admin/users/:id
+GET /api/stats
+GET /api/search/:pattern
 ```
 
 4. Minimum 1 niezabezpieczony endpoint
@@ -55,9 +56,9 @@ Nie wymagają tokena i można je wywołać bez logowania.
 5. Frontend korzystający z backendu
 Frontend React korzysta z backendu przez axios.
 Po zalogowaniu Auth0 frontend pobiera token:
-*getAccessTokenSilently()*
+*getAccessTokenSilently()* (GamPage)
 i wysyła go w nagłówku:
-*Authorization: Bearer <token>*
+*Authorization: Bearer <token>* (server)
 do chronionych endpointów backendu.
 
 6. Baza danych
@@ -80,6 +81,7 @@ Audience: https://wordle-api
 Role: admin
 Scope: play:game
 ```
+Trwałość danych użytkowników, ról i konfiguracji OAuth zapewnia platforma Auth0.
 8. PKCE
 PKCE jest włączone, ponieważ aplikacja frontendowa jest typu Single Page Application i korzysta z Auth0 React SDK.
 Klient generuje code verifier i code challenge. Auth0 wydaje kod autoryzacyjny tylko aplikacji, która później przedstawi poprawny code verifier. 

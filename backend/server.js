@@ -148,7 +148,7 @@ app.use(cors());
 // Backend zabezpieczony OAuth 2.0
 const checkJwt = auth({
     audience: "https://wordle-api",
-    issuerBaseURL: "https://dev-5ln5q8rhsoy0fkmx.us.auth0.com/",
+    issuerBaseURL: "https://dev-5ln5q8rhsoy0fkmx.us.auth0.com/", // czy token z auth0?
 });
 
 const metricsMiddleware = promBundle({
@@ -208,10 +208,6 @@ app.get('/ready', async (req, res) => {
     }
 });
 
-// function getRandomLocalWord() {
-//     const index = Math.floor(Math.random() * fallbackWords.length);
-//     return fallbackWords[index];
-// }
 
 const roomSessions = {};
 async function generateWordForRoom(roomName) {
@@ -251,24 +247,26 @@ app.post('/api/new-game', checkJwt, async (req, res) => {
   }  
 });
 
-app.put('/api/user/reset', checkJwt, async (req, res) => {
-  try {
-        await db.query("UPDATE users SET score = 0 WHERE id = $1", [req.auth]);
-        res.json({ message: "Statystyki zostały zresetowane!" });
-    } catch (err) {
-        res.status(500).json({ error: "Błąd bazy danych" });
-    }
-});
+// app.put('/api/user/reset', checkJwt, async (req, res) => {
+//   try {
+//         await db.query("UPDATE users SET score = 0 WHERE id = $1", [req.auth]);
+//         res.json({ message: "Statystyki zostały zresetowane!" });
+//     } catch (err) {
+//         res.status(500).json({ error: "Błąd bazy danych" });
+//     }
+// });
 
-app.delete('/api/user', checkJwt, requireAdmin, async (req, res) => {
+app.delete('/api/user', checkJwt, async (req, res) => {
   try {
-        await db.query("DELETE FROM users WHERE id = $1", [req.userId]);
+        const email = req.auth.payload.email;
+        await db.query("DELETE FROM users WHERE username  = $1", [email]);
         res.json({ message: "Twoje konto zostało trwale usunięte." });
     } catch (err) {
         res.status(500).json({ error: "Błąd bazy danych" });
     }
 });
 
+// endpoint uwzględniający role użytkownika
 app.delete('/api/admin/users/:id', checkJwt, requireAdmin, async (req, res) => {
     try {
         const { id } = req.params;
@@ -309,7 +307,7 @@ app.post('/api/play', checkJwt, async (req, res) => {
 });
 
 //statystyki
-app.get('/api/stats', async (req, res) => {
+app.get('/api/stats', checkJwt, async (req, res) => {
   try {
         const result = await db.query("SELECT id, username, score FROM users ORDER BY score DESC");
         res.json(result.rows);
@@ -318,6 +316,7 @@ app.get('/api/stats', async (req, res) => {
     }
 });
 
+// endpoint uwzględniający role użytkownika
 app.put('/api/admin/stats/reset', checkJwt, requireAdmin, async (req, res) => {
     try {
         await db.query("UPDATE users SET score = 0");
@@ -328,7 +327,7 @@ app.put('/api/admin/stats/reset', checkJwt, requireAdmin, async (req, res) => {
 });
 
 // Wyszukiwanie wzorca
-app.get('/api/search/:pattern', async (req, res) => {
+app.get('/api/search/:pattern', checkJwt, async (req, res) => {
   const pattern = `%${req.params.pattern}%`;
   try {
       const result = await db.query("SELECT id, username, score FROM users WHERE username LIKE $1", [pattern]);

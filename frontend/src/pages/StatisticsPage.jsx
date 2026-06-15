@@ -6,7 +6,7 @@ import "./StatisticsPage.css";
 import { useAuth0 } from "@auth0/auth0-react";
 
 export default function StatisticsPage() {
-    const { user, getAccessTokenSilently } = useAuth0();
+    const { user } = useAuth0();
     const roles = user?.["https://wordle-api/roles"] || [];
     const isAdmin = roles.includes("admin");
     const data = useContext(AppContext);
@@ -14,12 +14,38 @@ export default function StatisticsPage() {
     const [stats, setStats] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const { getAccessTokenSilently } = useAuth0();
 
     const fetchStats = async () => {
         setLoading(true);
+        // try {
+        //     const url = searchTerm ? `http://localhost:3000/api/search/${searchTerm}` : 'http://localhost:3000/api/stats';
+        //     const res = await axios.get(url);
+        //     const sortedData = res.data.sort((a, b) => b.score - a.score);
+        //     setStats(sortedData);
+        // } catch (err) {
+        //     console.error("Błąd podczas pobierania statystyk", err);
+        // } finally {
+        //     setLoading(false);
+        // }
         try {
-            const url = searchTerm ? `http://localhost:3000/api/search/${searchTerm}` : 'http://localhost:3000/api/stats';
-            const res = await axios.get(url);
+            const token = await getAccessTokenSilently({
+                authorizationParams: {
+                    audience: "https://wordle-api",
+                    scope: "play:game",
+                },
+            });
+
+            const url = searchTerm
+                ? `http://localhost:3000/api/search/${searchTerm}`
+                : "http://localhost:3000/api/stats";
+
+            const res = await axios.get(url, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
             const sortedData = res.data.sort((a, b) => b.score - a.score);
             setStats(sortedData);
         } catch (err) {
@@ -39,12 +65,19 @@ export default function StatisticsPage() {
     const handleDeleteUser = async (id) => {
         if (!window.confirm("Czy na pewno usunąć tego użytkownika?")) return;
         try {
+            // const token = await getAccessTokenSilently({
+            //     authorizationParams: {
+            //         audience: "https://wordle-api",
+            //         scope: "play:game",
+            //     },
+            // });
             const token = await getAccessTokenSilently({
                 authorizationParams: {
                     audience: "https://wordle-api",
                     scope: "play:game",
                 },
             });
+
             const res = await axios.delete(
                 `http://localhost:3000/api/admin/users/${id}`,
                 {

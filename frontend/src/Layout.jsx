@@ -18,10 +18,6 @@ const ProtectedRoute = ({ children }) => {
         ? children : <Navigate to="/login" replace />;
 };
 
-// const ProtectedRoute = ({ children }) => {
-//     const { userName } = useContext(AppContext);
-//     return userName ? children : <Navigate to="/login" replace />;
-// };
 export default function Layout() {
     const { userName } = useContext(AppContext);
     const { isAuthenticated, user, logout } = useAuth0();

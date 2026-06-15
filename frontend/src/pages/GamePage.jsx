@@ -14,9 +14,9 @@ export default function GamePage() {
     const [message, setMessage] = useState('');
     const [gameOver, setGameOver] = useState(false);
     const didInit = useRef(false);
-    const { getAccessTokenSilently, user } = useAuth0();
-    const playerName = user?.email || user?.name || "Anonim";
-
+    const { getAccessTokenSilently } = useAuth0();
+    const { user } = useAuth0();
+    const playerName = user?.nickname || user?.name || user?.email || "Graczu";
     // połączenia socket
     useEffect(() => {
         if (data.activeRoom && data.userName) {
@@ -180,7 +180,7 @@ export default function GamePage() {
         <div className='maingame'>
             <Sidebar />
             <div className="gameContainer">
-                <p className="welcome">Witaj, <strong>{data.userName}</strong>!</p>
+                <p className="welcome">Witaj, <strong>{playerName}</strong>!</p>
                 <div className="grid">
                     {board.map((attempt, i) => (
                         <div key={i} className="row">
