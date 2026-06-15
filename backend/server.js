@@ -234,6 +234,7 @@ async function generateWordForRoom(roomName) {
 }
 const rooms = ['Globalny', 'Pokój 1', 'Pokój 2', 'Eksperci'];
 
+// ZABEZPIECZONE ENDPOINTY
 app.post('/api/new-game', checkJwt, async (req, res) => {
   const {room} = req.body;
   if (!rooms.includes(room)) {
@@ -246,15 +247,6 @@ app.post('/api/new-game', checkJwt, async (req, res) => {
     res.status(500).json({ error: "Błąd serwera" });
   }  
 });
-
-// app.put('/api/user/reset', checkJwt, async (req, res) => {
-//   try {
-//         await db.query("UPDATE users SET score = 0 WHERE id = $1", [req.auth]);
-//         res.json({ message: "Statystyki zostały zresetowane!" });
-//     } catch (err) {
-//         res.status(500).json({ error: "Błąd bazy danych" });
-//     }
-// });
 
 app.delete('/api/user', checkJwt, async (req, res) => {
   try {

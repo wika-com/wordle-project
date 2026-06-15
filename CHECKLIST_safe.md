@@ -12,7 +12,7 @@ Autor: Wiktoria Woronecka
 
 ## Auth0
 
-Authorization Server: Auth0
+Authorization Server: Auth0 
 
 1. Backend zabezpieczony OAuth 2.0
 Backend Node.js/Express jest zabezpieczony middlewarem Auth0:
@@ -78,14 +78,22 @@ W Auth0 skonfigurowano:
 Application: Wordle Frontend
 API: Wordle API
 Audience: https://wordle-api
-Role: admin
+Role: admin, user
 Scope: play:game
 ```
-Trwałość danych użytkowników, ról i konfiguracji OAuth zapewnia platforma Auth0.
+
+
 8. PKCE
 PKCE jest włączone, ponieważ aplikacja frontendowa jest typu Single Page Application i korzysta z Auth0 React SDK.
 Klient generuje code verifier i code challenge. Auth0 wydaje kod autoryzacyjny tylko aplikacji, która później przedstawi poprawny code verifier. 
 Dzięki temu przechwycenie samego authorization code nie pozwala uzyskać tokenu.
+
+- React generuje losowy code_verifier
+- Z niego tworzy (hash) code_challenge
+- Do Auth0 wysyłany jest code_challenge
+- Po zalogowaniu Auth0 zwraca authorization code.
+- React wymienia code na token, ale musi wysłać code_verifier.
+- Auth0 sprawdza, czy code_verifier pasuje do code_challenge.
 
 9. Docker
 Docker Compose dla PostgreSQL
@@ -94,3 +102,4 @@ Docker Compose dla PostgreSQL
 *Auth0*
 
 11. Wolumen danych dla authorization servera
+Trwałość danych użytkowników, ról i konfiguracji OAuth zapewnia platforma Auth0. Wolumen byłby potrzebny do keycloaka.

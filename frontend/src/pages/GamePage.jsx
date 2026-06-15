@@ -115,6 +115,8 @@ export default function GamePage() {
 
         try {
             console.log("ROOM:", data.activeRoom);
+            // wysyłanie tokenu do endpointów
+
             const res = await axios.post(
                 "http://localhost:3000/api/play",
                 {

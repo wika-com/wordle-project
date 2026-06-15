@@ -8,7 +8,7 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
       <Auth0Provider
           domain="dev-5ln5q8rhsoy0fkmx.us.auth0.com"
-          clientId="hRH7vjbSi6dz5bUPLyoo6L2koHFxMsPQ"
+          clientId="hRH7vjbSi6dz5bUPLyoo6L2koHFxMsPQ" // identyfikator aplikacji
           authorizationParams={{ redirect_uri: "http://localhost:5173/game", audience: "https://wordle-api",  scope: "openid profile email play:game",}}
       >
         <App />
